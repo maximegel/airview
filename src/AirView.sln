@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2003
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirView.Api", "AirView.Api\AirView.Api.csproj", "{67201021-5A81-41DC-AB22-3C534AA2B149}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirView.Persistence", "AirView.Persistence\AirView.Persistence.csproj", "{1AEC286B-154D-4483-906D-6BF863800E4B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirView.Domain", "AirView.Domain\AirView.Domain.csproj", "{389050A8-45D6-4277-B524-A923E867228B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirView.Application", "AirView.Application\AirView.Application.csproj", "{DDB5AF6F-1023-4C0A-AAD5-DEEA84CC0824}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AirView.Shared", "AirView.Shared\AirView.Shared.csproj", "{7D19AF3A-193A-4E59-B063-7130134B92B5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67201021-5A81-41DC-AB22-3C534AA2B149}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67201021-5A81-41DC-AB22-3C534AA2B149}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67201021-5A81-41DC-AB22-3C534AA2B149}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67201021-5A81-41DC-AB22-3C534AA2B149}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AEC286B-154D-4483-906D-6BF863800E4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AEC286B-154D-4483-906D-6BF863800E4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AEC286B-154D-4483-906D-6BF863800E4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AEC286B-154D-4483-906D-6BF863800E4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{389050A8-45D6-4277-B524-A923E867228B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{389050A8-45D6-4277-B524-A923E867228B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{389050A8-45D6-4277-B524-A923E867228B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{389050A8-45D6-4277-B524-A923E867228B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDB5AF6F-1023-4C0A-AAD5-DEEA84CC0824}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDB5AF6F-1023-4C0A-AAD5-DEEA84CC0824}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDB5AF6F-1023-4C0A-AAD5-DEEA84CC0824}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDB5AF6F-1023-4C0A-AAD5-DEEA84CC0824}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D19AF3A-193A-4E59-B063-7130134B92B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D19AF3A-193A-4E59-B063-7130134B92B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D19AF3A-193A-4E59-B063-7130134B92B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D19AF3A-193A-4E59-B063-7130134B92B5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3B56774A-A4C3-42F9-B5B9-60520E203B9A}
+	EndGlobalSection
+EndGlobal
