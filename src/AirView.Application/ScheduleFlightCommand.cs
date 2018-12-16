@@ -1,9 +1,11 @@
 ﻿using System;
 using AirView.Application.Core;
+using AirView.Shared.Railways;
 
 namespace AirView.Application
 {
-    public class ScheduleFlightCommand : Command<ScheduleFlightCommand>,
+    public class ScheduleFlightCommand :
+        ICommand<Result<CommandException<ScheduleFlightCommand>>>,
         IAccessOptionalEntityCommand
     {
         public ScheduleFlightCommand(Guid id, DateTime departureTime, DateTime arrivalTime)

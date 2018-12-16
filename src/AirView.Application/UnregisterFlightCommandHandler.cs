@@ -9,7 +9,8 @@ using AirView.Shared.Railways;
 
 namespace AirView.Application
 {
-    public class UnregisterFlightCommandHandler : CommandHandler<UnregisterFlightCommand>
+    public class UnregisterFlightCommandHandler :
+        ICommandHandler<UnregisterFlightCommand, Result<CommandException<UnregisterFlightCommand>>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWritableRepository<Guid, Flight> _writableRepository;
@@ -22,17 +23,19 @@ namespace AirView.Application
             _unitOfWork = unitOfWork;
         }
 
-        public override async Task<Result<CommandException<UnregisterFlightCommand>>> HandleAsync(
-            UnregisterFlightCommand command, CancellationToken cancellationToken) =>
-            await (await _writableRepository.TryFindAsync(command.Id, cancellationToken))
+        public async Task<Result<CommandException<UnregisterFlightCommand>>> HandleAsync(UnregisterFlightCommand command, CancellationToken cancellationToken)
+        {
+            var commandId = command.Id;
+            return await (await _writableRepository.TryFindAsync(command.Id, cancellationToken))
                 .Map(async flight =>
                 {
                     _writableRepository.Remove(flight);
                     await _writableRepository.SaveAsync(cancellationToken);
                     _unitOfWork.Commit();
 
-                    return Ok;
+                    return (Result<CommandException<UnregisterFlightCommand>>)Result.Success;
                 })
-                .ReduceAsync(ExceptionOf.EntityNotFound(command.Id.ToString()));
+                .ReduceAsync(() => new EntityNotFoundCommandException<UnregisterFlightCommand>(commandId.ToString()));
+        }
     }
 }

@@ -3,7 +3,6 @@ using System.Linq;
 using System.Net;
 using AirView.Application;
 using AirView.Application.Core;
-using AirView.Application.Core.Exceptions;
 using AirView.Domain;
 using AirView.Persistence;
 using AirView.Persistence.Core;
@@ -69,14 +68,6 @@ namespace AirView.Api
             }
         }
 
-        /// <summary>
-        ///     This method is where you can register things directly with Autofac.
-        /// </summary>
-        /// <remarks>
-        ///     This runs after <see cref="ConfigureServices" /> so the things here will override registrations made in
-        ///     <see cref="ConfigureServices" />.
-        /// </remarks>
-        /// <param name="builder"></param>
         /// <summary>
         ///     This method gets called by the runtime. Use this method to add services to the container.
         /// </summary>

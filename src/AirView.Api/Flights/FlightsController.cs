@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using AirView.Application;
 using AirView.Application.Core;
@@ -8,9 +7,7 @@ using AirView.Domain;
 using AirView.Persistence.Core;
 using AirView.Shared.Railways;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AirView.Api.Flights
 {
@@ -32,13 +29,6 @@ namespace AirView.Api.Flights
             _queryableRepository = queryableRepository;
             _writableRepository = writableRepository;
         }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Unregister(Guid id) =>
-            (await _commandSender.SendAsync(new UnregisterFlightCommand(id)))
-            .Map(() => NoContent() as IActionResult)
-            .ReduceEntityNotFound(_ => NotFound())
-            .ReduceOrThrow();
 
         [HttpGet]
         public IActionResult GetAll() =>
@@ -93,9 +83,16 @@ namespace AirView.Api.Flights
 
             return (await _commandSender.SendAsync(command))
                 .Map(() => NoContent() as IActionResult)
-                .ReduceEntityNotFound(_ => NotFound())
+                .Reduce<EntityNotFoundCommandException<ScheduleFlightCommand>>(_ => NotFound())
                 .ReduceOrThrow();
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Unregister(Guid id) =>
+            (await _commandSender.SendAsync(new UnregisterFlightCommand(id)))
+            .Map(() => NoContent() as IActionResult)
+            .Reduce<EntityNotFoundCommandException<UnregisterFlightCommand>>(_ => NotFound())
+            .ReduceOrThrow();
 
         private string Link(Guid id) =>
             Url.Link("get-flight", new {id = id.ToString()});

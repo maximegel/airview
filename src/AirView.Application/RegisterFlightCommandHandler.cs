@@ -2,14 +2,14 @@
 using System.Threading;
 using System.Threading.Tasks;
 using AirView.Application.Core;
-using AirView.Application.Core.Exceptions;
 using AirView.Domain;
 using AirView.Persistence.Core;
 using AirView.Shared.Railways;
 
 namespace AirView.Application
 {
-    public class RegisterFlightCommandHandler : CreationalCommandHandler<RegisterFlightCommand, Guid>
+    public class RegisterFlightCommandHandler :
+        ICommandHandler<RegisterFlightCommand, Result<CommandException<RegisterFlightCommand>, Guid>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWritableRepository<Guid, Flight> _writableRepository;
@@ -22,7 +22,7 @@ namespace AirView.Application
             _unitOfWork = unitOfWork;
         }
 
-        public override async Task<Result<CommandException<RegisterFlightCommand>, Guid>> HandleAsync(
+        public async Task<Result<CommandException<RegisterFlightCommand>, Guid>> HandleAsync(
             RegisterFlightCommand command, CancellationToken cancellationToken)
         {
             var newFlight = new Flight(Guid.NewGuid(), command.Number);
@@ -31,7 +31,7 @@ namespace AirView.Application
             await _writableRepository.SaveAsync(cancellationToken);
             _unitOfWork.Commit();
 
-            return Ok(newFlight.Id);
+            return newFlight.Id;
         }
     }
 }

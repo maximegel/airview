@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AirView.Domain.Core;
 using AirView.Shared.Railways;
 
@@ -8,34 +9,34 @@ namespace AirView.Application.Core
 {
     public class InMemoryBusBuilder
     {
-        private IDictionary<Type, ICollection<Delegate>> Routes { get; } =
+        private IDictionary<Type, ICollection<Delegate>> Handlers { get; } =
             new Dictionary<Type, ICollection<Delegate>>();
 
         public InMemoryBusBuilder AddCommandHandler<TCommand, TResult>(ICommandHandler<TCommand, TResult> handler)
             where TCommand : ICommand<TResult> =>
             AddCommandHandler<TCommand, TResult>(handler.HandleAsync);
 
-        public InMemoryBusBuilder AddCommandHandler<TCommand, TResult>(HandlerDelegate<TCommand, TResult> handler)
+        public InMemoryBusBuilder AddCommandHandler<TCommand, TResult>(
+            Func<TCommand, CancellationToken, Task<TResult>> handler)
             where TCommand : ICommand<TResult>
         {
-            if (Routes.ContainsKey(typeof(TCommand)))
+            if (Handlers.ContainsKey(typeof(TCommand)))
                 throw new InvalidOperationException(
-                    $"Cannot register more than one command handler for the same type: {typeof(TCommand).Name}.");
+                    $"Cannot register more than one command handler for '{typeof(TCommand).Name}'.");
 
-            Routes.Add(typeof(TCommand), new List<Delegate> {handler});
+            Handlers.Add(typeof(TCommand), new List<Delegate> {handler});
             return this;
         }
 
-        public InMemoryBusBuilder AddCommandHandlers<TCommand, TResult>(
-            IEnumerable<ICommandHandler<TCommand, TResult>> handlers)
-            where TCommand : ICommand<TResult> =>
-            handlers.Aggregate(this, (current, next) => current.AddCommandHandler(next));
+        public InMemoryBusBuilder AddEventHandler<TEvent>(Func<TEvent, CancellationToken, Task> handler)
+            where TEvent : IDomainEvent =>
+            AddEventHandler<TEvent>(@event => handler(@event, CancellationToken.None).Start());
 
-        public InMemoryBusBuilder AddEventHandler<TEvent>(HandlerDelegate<TEvent> handler)
+        private InMemoryBusBuilder AddEventHandler<TEvent>(Action<TEvent> handler)
             where TEvent : IDomainEvent
         {
-            Routes[typeof(TEvent)] =
-                Routes.TryGetValue(typeof(TEvent))
+            Handlers[typeof(TEvent)] =
+                Handlers.TryGetValue(typeof(TEvent))
                     .Map(handlers =>
                     {
                         handlers.Add(handler);
@@ -47,9 +48,6 @@ namespace AirView.Application.Core
         }
 
         public InMemoryBus Build() =>
-            new InMemoryBus
-            {
-                Routes = Routes
-            };
+            new InMemoryBus {Handlers = Handlers};
     }
 }
