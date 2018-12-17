@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
-using AirView.Shared.Equality;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace AirView.Domain.Core
 {
-    /// <inheritdoc />
     /// <summary>
     ///     Represents an objects without conceptual identity. Value objects also describe a characteristic of a thing and are
     ///     distinguishable only by the state of their properties.
@@ -36,14 +38,46 @@ namespace AirView.Domain.Core
     ///          }
     ///      </code>
     /// </example>
-    /// <typeparam name="TSelf"></typeparam>
-    // TODO(maximegelinas): Simplify code by following this implementation: https://enterprisecraftsmanship.com/2017/08/28/value-object-a-better-implementation/. 
-    public abstract class ValueObject<TSelf> : Equatable<TSelf>
-        where TSelf : ValueObject<TSelf>
+    public abstract class ValueObject
     {
+        private static readonly ConcurrentDictionary<Type, IReadOnlyCollection<PropertyInfo>> TypeProperties =
+            new ConcurrentDictionary<Type, IReadOnlyCollection<PropertyInfo>>();
+
+        public static bool operator ==(ValueObject left, ValueObject right) =>
+            Equals(left, right);
+
+        public static bool operator !=(ValueObject left, ValueObject right) =>
+            !(left == right);
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return GetType() == obj.GetType() && Equals((ValueObject) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return GetEqualityComponents()
+                    .Aggregate(17, (current, obj) => current * 23 + (obj?.GetHashCode() ?? 0));
+            }
+        }
+
         public abstract override string ToString();
 
-        protected override IEqualityComparer<TSelf> GetEqualityComparer() =>
-            EqualityComparer.ByTaggedMembers<TSelf>();
+        protected bool Equals(ValueObject other) =>
+            GetEqualityComponents().SequenceEqual(other.GetEqualityComponents());
+
+        protected virtual IEnumerable<object> GetEqualityComponents() =>
+            GetProperties().Select(property => property.GetValue(this));
+
+        protected virtual IEnumerable<PropertyInfo> GetProperties() =>
+            TypeProperties.GetOrAdd(GetType(), type =>
+                type.GetTypeInfo()
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .OrderBy(property => property.Name)
+                    .ToList());
     }
 }

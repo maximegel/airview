@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using AirView.Shared.Equality;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AirView.Domain.Core
 {
@@ -30,7 +30,7 @@ namespace AirView.Domain.Core
     ///      </code>
     /// </example>
     /// <typeparam name="TId"></typeparam>
-    public abstract class Entity<TId> : Equatable<Entity<TId>>,
+    public abstract class Entity<TId> :
         IEntity<TId>
     {
         protected Entity(TId id) =>
@@ -40,13 +40,27 @@ namespace AirView.Domain.Core
 
         public TId Id { get; protected set; }
 
-        public bool Equals(IEntity<TId> other) =>
-            base.Equals(other as Entity<TId>);
+        public static bool operator ==(Entity<TId> left, IEntity right) =>
+            Equals(left, right);
+
+        public static bool operator !=(Entity<TId> left, IEntity right) =>
+            !(left == right);
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return GetType() == obj.GetType() && Equals((Entity<TId>) obj);
+        }
+
+        [SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode")]
+        public override int GetHashCode() =>
+            EqualityComparer<TId>.Default.GetHashCode(Id);
 
         public override string ToString() =>
             $"{GetType()}#{Id}";
 
-        protected override IEqualityComparer<Entity<TId>> GetEqualityComparer() =>
-            EqualityComparer.ByKey<Entity<TId>>(self => self.Id);
+        protected bool Equals(Entity<TId> other) =>
+            EqualityComparer<TId>.Default.Equals(Id, other.Id);
     }
 }
