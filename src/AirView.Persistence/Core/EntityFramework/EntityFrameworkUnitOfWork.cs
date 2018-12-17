@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace AirView.Persistence.Core.EntityFramework
 {
     public class EntityFrameworkUnitOfWork<TDbContext> :
-        IUnitOfWork
+        IReadUnitOfWork, IWriteUnitOfWork
         where TDbContext : DbContext
     {
-        private readonly DbContext _context;
+        private readonly TDbContext _context;
         private readonly IDbContextTransaction _transaction;
 
         public EntityFrameworkUnitOfWork(TDbContext context)

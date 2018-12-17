@@ -11,14 +11,12 @@ namespace AirView.Application
     public class RegisterFlightCommandHandler :
         ICommandHandler<RegisterFlightCommand, Result<CommandException<RegisterFlightCommand>, Guid>>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IWritableRepository<Guid, Flight> _writableRepository;
+        private readonly IWritableRepository<Guid, Flight> _repository;
+        private readonly IWriteUnitOfWork _unitOfWork;
 
-        public RegisterFlightCommandHandler(
-            IWritableRepository<Guid, Flight> writableRepository,
-            IUnitOfWork unitOfWork)
+        public RegisterFlightCommandHandler(IWritableRepository<Guid, Flight> repository, IWriteUnitOfWork unitOfWork)
         {
-            _writableRepository = writableRepository;
+            _repository = repository;
             _unitOfWork = unitOfWork;
         }
 
@@ -27,8 +25,8 @@ namespace AirView.Application
         {
             var newFlight = new Flight(Guid.NewGuid(), command.Number);
 
-            _writableRepository.Add(newFlight);
-            await _writableRepository.SaveAsync(cancellationToken);
+            _repository.Add(newFlight);
+            await _repository.SaveAsync(cancellationToken);
             _unitOfWork.Commit();
 
             return newFlight.Id;

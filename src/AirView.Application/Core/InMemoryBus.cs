@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using AirView.Domain.Core;
@@ -27,10 +28,11 @@ namespace AirView.Application.Core
                     $"No command handler registrated for '{command.GetType().Name}'."));
 
         public Task PublishAsync(IDomainEvent @event, CancellationToken cancellationToken) =>
-            Handlers.TryGetValue(@event.GetType())
-                .Map(handlers => handlers.Select(handler => (Task) handler.DynamicInvoke(@event, cancellationToken)))
-                .Map(handlers => handlers.Select(async task => await task.ConfigureAwait(false)))
-                .Map(Task.WhenAll)
-                .Reduce(Task.CompletedTask);
+            Task.WhenAll(Handlers
+                .AsEnumerable()
+                .Where(pair => pair.Key.IsInstanceOfType(@event))
+                .SelectMany(pair => pair.Value)
+                .Select(handler => (Task) handler.DynamicInvoke(@event, cancellationToken))
+                .Select(async task => await task.ConfigureAwait(false)));
     }
 }

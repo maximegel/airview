@@ -53,10 +53,10 @@ namespace AirView.Domain.Core
         IEnumerable<IDomainEvent<TSelf, TId>> IAggregateRoot<TSelf, TId>.UncommittedEvents =>
             _uncommitedEvents;
 
-        protected void Raise(IAggregateEvent<TSelf, TId> @event)
+        protected void Raise<TEvent>(TEvent @event)
+            where TEvent : IAggregateEvent<TSelf, TId>
         {
-            Version++;
-            var domainEvent = DomainEvent.Of((TSelf) this, @event);
+            var domainEvent = new DomainEvent<TSelf, TId, TEvent>(Id, ++Version, @event);
             _router.Dispatch(domainEvent.Data);
             _uncommitedEvents.Add(domainEvent);
         }

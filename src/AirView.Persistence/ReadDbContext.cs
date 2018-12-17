@@ -12,12 +12,10 @@ namespace AirView.Persistence
         {
         }
 
-        public DbSet<Flight> Flights { get; set; }
+        public DbSet<FlightProjection> Flights { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Flight>()
-                .HasKey(flight => flight.Id);
         }
     }
 }

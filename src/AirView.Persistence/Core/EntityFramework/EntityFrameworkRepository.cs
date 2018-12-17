@@ -44,7 +44,7 @@ namespace AirView.Persistence.Core.EntityFramework
 
         async Task<Option<TEntity>> IWritableRepository<TId, TEntity>.TryFindAsync(
             TId id, CancellationToken cancellationToken) =>
-            Option.From(await _set.FindAsync(id, cancellationToken));
+            Option.From(await _set.FindAsync(new object[] {id}, cancellationToken));
 
         private TResult ExecuteAsNoTracking<TResult>(Func<TResult> query)
         {

@@ -4,7 +4,12 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
 {
     public class EventSourcedDbContext : DbContext
     {
-        public EventSourcedDbContext(DbContextOptions options) :
+        public EventSourcedDbContext(DbContextOptions<EventSourcedDbContext> options) :
+            base(options)
+        {
+        }
+
+        protected EventSourcedDbContext(DbContextOptions options) :
             base(options)
         {
         }

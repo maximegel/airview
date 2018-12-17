@@ -8,6 +8,7 @@ using AirView.Persistence.Core;
 using AirView.Shared.Railways;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace AirView.Api.Flights
 {
@@ -17,49 +18,26 @@ namespace AirView.Api.Flights
     {
         private readonly ICommandSender _commandSender;
         private readonly IMapper _mapper;
-        private readonly IQueryableRepository<Guid, Flight> _queryableRepository;
-        private readonly IWritableRepository<Guid, Flight> _writableRepository;
+        private readonly IQueryableRepository<Guid, FlightProjection> _queryableRepository;
 
         public FlightsController(ICommandSender commandSender, IMapper mapper,
-            IQueryableRepository<Guid, Flight> queryableRepository,
-            IWritableRepository<Guid, Flight> writableRepository)
+            IQueryableRepository<Guid, FlightProjection> queryableRepository)
         {
             _commandSender = commandSender;
             _mapper = mapper;
             _queryableRepository = queryableRepository;
-            _writableRepository = writableRepository;
         }
 
         [HttpGet]
-        public IActionResult GetAll() =>
-            Ok(new[]
-            {
-                new FlightDto
-                {
-                    Id = Guid.Parse("585e50f1-82c0-49fd-9d8c-d6ca57e64572")
-                },
-                new FlightDto
-                {
-                    Id = Guid.Parse("685e50f1-82c0-49fd-9d8c-d6ca57e64572")
-                },
-                new FlightDto
-                {
-                    Id = Guid.Parse("785e50f1-82c0-49fd-9d8c-d6ca57e64572")
-                }
-            });
-
-        //[HttpGet]
-        //public async Task<IActionResult> GetAll() =>
-        //    Ok(await _queryableRepository
-        //        .QueryAll()
-        //        .ProjectTo<FlightDto>(_mapper.ConfigurationProvider)
-        //        .ToListAsync());
+        public async Task<IActionResult> GetAll() =>
+            Ok(await _queryableRepository
+                .QueryAll()
+                .ToListAsync());
 
         [HttpGet("{id}", Name = "get-flight")]
         public async Task<IActionResult> GetById(Guid id) =>
-            (await _writableRepository.TryFindAsync(id))
-            .Map(_mapper.Map<FlightDto>)
-            .Map<FlightDto, IActionResult>(Ok)
+            (await _queryableRepository.TryFindAsync(id))
+            .Map<FlightProjection, IActionResult>(Ok)
             .Reduce(NotFound);
 
         [HttpPost]
@@ -77,12 +55,12 @@ namespace AirView.Api.Flights
         {
             if (dto == null) return BadRequest();
 
-            var command =
-                _mapper.Map<ScheduleFlightCommand>(dto,
-                    opt => opt.Items[nameof(ScheduleFlightCommand.Id)] = id);
+            var flightId = id;
+            var command = _mapper.Map<ScheduleFlightCommand>(
+                dto, opt => opt.Items[nameof(ScheduleFlightCommand.Id)] = flightId);
 
             return (await _commandSender.SendAsync(command))
-                .Map(() => NoContent() as IActionResult)
+                .Map(() => Accepted(Link(id)) as IActionResult)
                 .Reduce<EntityNotFoundCommandException<ScheduleFlightCommand>>(_ => NotFound())
                 .ReduceOrThrow();
         }
@@ -90,7 +68,7 @@ namespace AirView.Api.Flights
         [HttpDelete("{id}")]
         public async Task<IActionResult> Unregister(Guid id) =>
             (await _commandSender.SendAsync(new UnregisterFlightCommand(id)))
-            .Map(() => NoContent() as IActionResult)
+            .Map(() => Accepted(Link(id)) as IActionResult)
             .Reduce<EntityNotFoundCommandException<UnregisterFlightCommand>>(_ => NotFound())
             .ReduceOrThrow();
 

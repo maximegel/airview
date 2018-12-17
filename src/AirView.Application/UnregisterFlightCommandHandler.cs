@@ -12,28 +12,27 @@ namespace AirView.Application
     public class UnregisterFlightCommandHandler :
         ICommandHandler<UnregisterFlightCommand, Result<CommandException<UnregisterFlightCommand>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IWritableRepository<Guid, Flight> _writableRepository;
+        private readonly IWritableRepository<Guid, Flight> _repository;
+        private readonly IWriteUnitOfWork _unitOfWork;
 
-        public UnregisterFlightCommandHandler(
-            IWritableRepository<Guid, Flight> writableRepository,
-            IUnitOfWork unitOfWork)
+        public UnregisterFlightCommandHandler(IWritableRepository<Guid, Flight> repository, IWriteUnitOfWork unitOfWork)
         {
-            _writableRepository = writableRepository;
+            _repository = repository;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<CommandException<UnregisterFlightCommand>>> HandleAsync(UnregisterFlightCommand command, CancellationToken cancellationToken)
+        public async Task<Result<CommandException<UnregisterFlightCommand>>> HandleAsync(
+            UnregisterFlightCommand command, CancellationToken cancellationToken)
         {
             var commandId = command.Id;
-            return await (await _writableRepository.TryFindAsync(command.Id, cancellationToken))
+            return await (await _repository.TryFindAsync(command.Id, cancellationToken))
                 .Map(async flight =>
                 {
-                    _writableRepository.Remove(flight);
-                    await _writableRepository.SaveAsync(cancellationToken);
+                    _repository.Remove(flight);
+                    await _repository.SaveAsync(cancellationToken);
                     _unitOfWork.Commit();
 
-                    return (Result<CommandException<UnregisterFlightCommand>>)Result.Success;
+                    return (Result<CommandException<UnregisterFlightCommand>>) Result.Success;
                 })
                 .ReduceAsync(() => new EntityNotFoundCommandException<UnregisterFlightCommand>(commandId.ToString()));
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using AirView.Domain.Core;
@@ -17,15 +18,15 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
         where TDbContext : EventSourcedDbContext
     {
         private readonly Func<TId, TAggregate> _aggregateFactory = AggregateFactory.CreateByReflexion<TAggregate, TId>;
-
         private readonly TDbContext _context;
-        //private readonly IEventPublisher _eventPublisher;
+        private readonly IEventPublisher _eventPublisher;
+        private readonly IDictionary<TId, TAggregate> _trakedAggregates = new Dictionary<TId, TAggregate>();
 
-        private readonly IDictionary<TId, TAggregate> _trakedAggregates =
-            new Dictionary<TId, TAggregate>();
-
-        public EntityFrameworkEventSourcedRepository(TDbContext context) =>
+        public EntityFrameworkEventSourcedRepository(TDbContext context, IEventPublisher eventPublisher)
+        {
             _context = context;
+            _eventPublisher = eventPublisher;
+        }
 
         public void Add(TAggregate aggregate) =>
             Attach(aggregate);
@@ -58,7 +59,8 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
                     })));
 
             await _context.SaveChangesAsync(cancellationToken);
-            await Task.WhenAll(_trakedAggregates.Values.Select(entity => PublishEvents(entity, cancellationToken)));
+            await Task.WhenAll(_trakedAggregates.Values.Select(aggregate => 
+                PublishEvents(aggregate, cancellationToken)));
             _trakedAggregates.Clear();
         }
 
@@ -73,30 +75,36 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
                 .Select(@event =>
                 {
                     var metadata = JsonConvert.DeserializeObject<dynamic>(@event.Metadata);
-                    var typeName = (string) metadata.DataType;
+                    var dataType = Type.GetType((string) metadata.DataType);
+                    var evenType = typeof(DomainEvent<,,>).MakeGenericType(typeof(TAggregate), typeof(TId), dataType);
 
-                    return DomainEvent.Of(
-                        (TId) (Guid.Parse(@event.StreamId) as object),
-                        @event.StreamVersion,
-                        (IAggregateEvent<TAggregate, TId>)
-                        JsonConvert.DeserializeObject(@event.Data, Type.GetType(typeName)));
+                    return
+                        (IDomainEvent<TAggregate, TId>)
+                        evenType.GetConstructor(
+                                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
+                                null, new[] {typeof(TId), typeof(long), dataType}, null)
+                            ?.Invoke(new[]
+                            {
+                                (TId) (Guid.Parse(@event.StreamId) as object),
+                                @event.StreamVersion,
+                                JsonConvert.DeserializeObject(@event.Data, dataType)
+                            })
+                        ?? throw new InvalidOperationException($"Constructor not found for domain event '{evenType.Name}'.");
                 })
                 .ToList();
 
             if (!persistentEvents.Any()) return Option.None;
 
             var aggregate = _aggregateFactory(id);
-            aggregate.ClearUncommitedEvents();
             domainEvents.ForEach(@event => aggregate.ApplyEvent(@event));
 
             Attach(aggregate);
             return aggregate;
         }
 
-        private static Task PublishEvents(TAggregate entity, CancellationToken cancellationToken) =>
-            Task.WhenAll(entity.UncommittedEvents
-                    .Select(_ => Task.CompletedTask))
-                //.Select(@event => _eventPublisher.PublishAsync(@event, cancellationToken)))
-                .ContinueWith(_ => entity.ClearUncommitedEvents(), cancellationToken);
+        private Task PublishEvents(TAggregate aggregate, CancellationToken cancellationToken) =>
+            Task.WhenAll(aggregate.UncommittedEvents.Select(@event =>
+                    _eventPublisher.PublishAsync(@event, cancellationToken)))
+                .ContinueWith(_ => aggregate.ClearUncommitedEvents(), cancellationToken);
     }
 }

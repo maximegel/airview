@@ -27,8 +27,9 @@ namespace AirView.Domain.Core.Internal
                 {
                     aggregate.GetType().GetProperty(nameof(IAggregateRoot.Id))?.SetValue(aggregate, id);
                     aggregate.GetType().GetProperty(nameof(IAggregateRoot.Version))?.SetValue(aggregate, 0);
+                    aggregate.ClearUncommitedEvents();
                 })
                 .Reduce(() => throw new InvalidOperationException(
-                    $"Constructor not found for aggregate '{typeof(TAggregate)}'."));
+                    $"Constructor not found for aggregate '{typeof(TAggregate).Name}'."));
     }
 }

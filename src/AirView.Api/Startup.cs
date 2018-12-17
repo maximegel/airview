@@ -4,6 +4,7 @@ using System.Net;
 using AirView.Application;
 using AirView.Application.Core;
 using AirView.Domain;
+using AirView.Domain.Core;
 using AirView.Persistence;
 using AirView.Persistence.Core;
 using AirView.Persistence.Core.EntityFramework;
@@ -39,6 +40,8 @@ namespace AirView.Api
             if (!env.IsDevelopment())
                 app.UseHsts();
 
+            // TODO(maximegelinas): Use 'GlobalExceptionHandler' nuget package.
+            // TODO(maximegelinas): Return errors as 'ProblemDetails'.
             app.UseExceptionHandler(appBuilder =>
                 appBuilder.Run(async context =>
                 {
@@ -63,8 +66,8 @@ namespace AirView.Api
 
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
             {
+                serviceScope.ServiceProvider.GetRequiredService<ReadDbContext>().Database.EnsureCreated();
                 serviceScope.ServiceProvider.GetRequiredService<WriteDbContext>().Database.EnsureCreated();
-                //serviceScope.ServiceProvider.GetRequiredService<ReadDbContext>().Database.EnsureCreated();
             }
         }
 
@@ -76,13 +79,17 @@ namespace AirView.Api
         {
             // == Persistence ==
             services.AddDbContext<ReadDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(Configuration.GetConnectionString("Read")));
             services.AddDbContext<WriteDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddScoped<IUnitOfWork, EntityFrameworkUnitOfWork<WriteDbContext>>();
+                options.UseSqlServer(Configuration.GetConnectionString("Write")));
+            services.AddScoped<IReadUnitOfWork, EntityFrameworkUnitOfWork<ReadDbContext>>();
+            services.AddScoped<IWriteUnitOfWork, EntityFrameworkUnitOfWork<WriteDbContext>>();
             services.AddTransient<
-                IQueryableRepository<Guid, Flight>,
-                EntityFrameworkRepository<Guid, Flight, ReadDbContext>>();
+                IQueryableRepository<Guid, FlightProjection>,
+                EntityFrameworkRepository<Guid, FlightProjection, ReadDbContext>>();
+            services.AddTransient<
+                IWritableRepository<Guid, FlightProjection>,
+                EntityFrameworkRepository<Guid, FlightProjection, ReadDbContext>>();
             services.AddTransient<
                 IWritableRepository<Guid, Flight>,
                 EntityFrameworkEventSourcedRepository<Guid, Flight, WriteDbContext>>();
@@ -104,6 +111,15 @@ namespace AirView.Api
                         ScheduleFlightCommand, Result<CommandException<ScheduleFlightCommand>>>>())
                     .AddCommandHandler(provider.GetRequiredService<ICommandHandler<
                         UnregisterFlightCommand, Result<CommandException<UnregisterFlightCommand>>>>())
+                    .Build());
+            services.AddTransient<IEventHandler<IDomainEvent<Flight, Guid, FlightRegistratedEvent>>, FlightProjector>();
+            services.AddTransient<IEventHandler<IDomainEvent<Flight, Guid, FlightScheduledEvent>>, FlightProjector>();
+            services.AddScoped<IEventPublisher, InMemoryBus>(provider =>
+                new InMemoryBusBuilder()
+                    .AddEventHandler(provider.GetRequiredService<IEventHandler<
+                        IDomainEvent<Flight, Guid, FlightRegistratedEvent>>>())
+                    .AddEventHandler(provider.GetRequiredService<IEventHandler<
+                        IDomainEvent<Flight, Guid, FlightScheduledEvent>>>())
                     .Build());
 
             services.AddAutoMapper();

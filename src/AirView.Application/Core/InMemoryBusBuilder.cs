@@ -28,22 +28,16 @@ namespace AirView.Application.Core
             return this;
         }
 
-        public InMemoryBusBuilder AddEventHandler<TEvent>(Func<TEvent, CancellationToken, Task> handler)
+        public InMemoryBusBuilder AddEventHandler<TEvent>(IEventHandler<TEvent> handler)
             where TEvent : IDomainEvent =>
-            AddEventHandler<TEvent>(@event => handler(@event, CancellationToken.None).Start());
+            AddEventHandler<TEvent>(handler.HandleAsync);
 
-        private InMemoryBusBuilder AddEventHandler<TEvent>(Action<TEvent> handler)
+        public InMemoryBusBuilder AddEventHandler<TEvent>(Func<TEvent, CancellationToken, Task> handler)
             where TEvent : IDomainEvent
         {
-            Handlers[typeof(TEvent)] =
-                Handlers.TryGetValue(typeof(TEvent))
-                    .Map(handlers =>
-                    {
-                        handlers.Add(handler);
-                        return handlers;
-                    })
-                    .Reduce(() => new List<Delegate> {handler});
-
+            Handlers[typeof(TEvent)] = Handlers.TryGetValue(typeof(TEvent))
+                .Do(handlers => handlers.Add(handler))
+                .Reduce(() => new List<Delegate> {handler});
             return this;
         }
 

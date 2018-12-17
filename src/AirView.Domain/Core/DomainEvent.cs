@@ -1,32 +1,32 @@
-﻿namespace AirView.Domain.Core
+﻿using System;
+
+namespace AirView.Domain.Core
 {
-    public static class DomainEvent
+    public class DomainEvent<TAggregate, TAggregateId, TAggregateEvent> :
+        IDomainEvent<TAggregate, TAggregateId, TAggregateEvent>
+        where TAggregate : IAggregateRoot<TAggregate, TAggregateId>
+        where TAggregateEvent : IAggregateEvent<TAggregate, TAggregateId>
     {
-        public static IDomainEvent<TAggregate, TAggregateId> Of<
-            TAggregate, TAggregateId>(
-            TAggregate aggregate, IAggregateEvent<TAggregate, TAggregateId> data)
-            where TAggregate : IAggregateRoot<TAggregate, TAggregateId> =>
-            Of<TAggregate, TAggregateId, IAggregateEvent<TAggregate, TAggregateId>>(aggregate, data);
+        public DomainEvent(TAggregateId aggregateId, long aggregateVersion, TAggregateEvent data)
+        {
+            AggregateId = aggregateId;
+            AggregateType = typeof(TAggregate);
+            AggregateVersion = aggregateVersion;
+            Data = data;
+        }
 
-        public static IDomainEvent<TAggregate, TAggregateId> Of<
-            TAggregate, TAggregateId>(
-            TAggregateId aggregateId, long aggregateVersion, IAggregateEvent<TAggregate, TAggregateId> data)
-            where TAggregate : IAggregateRoot<TAggregate, TAggregateId> =>
-            Of<TAggregate, TAggregateId, IAggregateEvent<TAggregate, TAggregateId>>(
-                aggregateId, aggregateVersion, data);
+        object IDomainEvent.AggregateId => AggregateId;
 
-        public static IDomainEvent<TAggregate, TAggregateId, TAggregateEvent> Of<
-            TAggregate, TAggregateId, TAggregateEvent>(
-            TAggregate aggregate, TAggregateEvent data)
-            where TAggregate : IAggregateRoot<TAggregate, TAggregateId>
-            where TAggregateEvent : IAggregateEvent<TAggregate, TAggregateId> =>
-            Of<TAggregate, TAggregateId, TAggregateEvent>(aggregate.Id, aggregate.Version, data);
+        public Type AggregateType { get; }
 
-        public static IDomainEvent<TAggregate, TAggregateId, TAggregateEvent> Of<
-            TAggregate, TAggregateId, TAggregateEvent>(
-            TAggregateId aggregateId, long aggregateVersion, TAggregateEvent data)
-            where TAggregate : IAggregateRoot<TAggregate, TAggregateId>
-            where TAggregateEvent : IAggregateEvent<TAggregate, TAggregateId> =>
-            new DomainEvent<TAggregate, TAggregateId, TAggregateEvent>(aggregateId, aggregateVersion, data);
+        public long AggregateVersion { get; }
+
+        IAggregateEvent IDomainEvent.Data => Data;
+
+        public TAggregateEvent Data { get; }
+
+        public TAggregateId AggregateId { get; }
+
+        IAggregateEvent<TAggregate, TAggregateId> IDomainEvent<TAggregate, TAggregateId>.Data => Data;
     }
 }

@@ -12,26 +12,25 @@ namespace AirView.Application
     public class ScheduleFlightCommandHandler :
         ICommandHandler<ScheduleFlightCommand, Result<CommandException<ScheduleFlightCommand>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IWritableRepository<Guid, Flight> _writableRepository;
+        private readonly IWritableRepository<Guid, Flight> _repository;
+        private readonly IWriteUnitOfWork _unitOfWork;
 
-        public ScheduleFlightCommandHandler(
-            IWritableRepository<Guid, Flight> writableRepository,
-            IUnitOfWork unitOfWork)
+        public ScheduleFlightCommandHandler(IWritableRepository<Guid, Flight> repository, IWriteUnitOfWork unitOfWork)
         {
-            _writableRepository = writableRepository;
+            _repository = repository;
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Result<CommandException<ScheduleFlightCommand>>> HandleAsync(ScheduleFlightCommand command, CancellationToken cancellationToken)
+        public async Task<Result<CommandException<ScheduleFlightCommand>>> HandleAsync(
+            ScheduleFlightCommand command, CancellationToken cancellationToken)
         {
             var commandId = command.Id;
-            return await (await _writableRepository.TryFindAsync(commandId, cancellationToken))
+            return await (await _repository.TryFindAsync(commandId, cancellationToken))
                 .Map(async flight =>
                 {
                     flight.Schedule(command.DepartureTime, command.ArrivalTime);
 
-                    await _writableRepository.SaveAsync(cancellationToken);
+                    await _repository.SaveAsync(cancellationToken);
                     _unitOfWork.Commit();
 
                     return (Result<CommandException<ScheduleFlightCommand>>) Result.Success;
