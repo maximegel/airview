@@ -5,6 +5,7 @@ using AirView.Shared.Railways;
 namespace AirView.Application
 {
     public class ScheduleFlightCommand :
+        // TODO(maximegelinas): Create a abstract class that implement 'ICommand<Result<CommandException<TCommand>>>'.
         ICommand<Result<CommandException<ScheduleFlightCommand>>>,
         IAccessOptionalEntityCommand
     {

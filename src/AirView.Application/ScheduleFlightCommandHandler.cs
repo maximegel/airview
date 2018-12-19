@@ -10,6 +10,7 @@ using AirView.Shared.Railways;
 namespace AirView.Application
 {
     public class ScheduleFlightCommandHandler :
+        // TODO(maximegelinas): Create a abstract class that implement 'ICommandHandler<TCommand, Result<CommandException<TCommand>>>'.
         ICommandHandler<ScheduleFlightCommand, Result<CommandException<ScheduleFlightCommand>>>
     {
         private readonly IWritableRepository<Guid, Flight> _repository;

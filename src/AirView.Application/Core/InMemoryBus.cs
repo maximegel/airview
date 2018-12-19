@@ -5,10 +5,12 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using AirView.Domain.Core;
+using AirView.Shared;
 using AirView.Shared.Railways;
 
 namespace AirView.Application.Core
 {
+    // TODO(maximegelinas): Move to 'Infrastructure' package.
     public class InMemoryBus :
         ICommandSender,
         IEventPublisher
@@ -25,7 +27,7 @@ namespace AirView.Application.Core
                 .Map(handlers => handlers.Single())
                 .Map(handler => (Task<TResult>) handler.DynamicInvoke(command, cancellationToken))
                 .Reduce(() => throw new InvalidOperationException(
-                    $"No command handler registrated for '{command.GetType().Name}'."));
+                    $"No command handler registrated for '{command.GetType().GetFriendlyName()}'."));
 
         public Task PublishAsync(IDomainEvent @event, CancellationToken cancellationToken) =>
             Task.WhenAll(Handlers
