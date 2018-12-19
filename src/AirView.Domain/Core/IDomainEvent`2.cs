@@ -1,11 +1,10 @@
 ﻿namespace AirView.Domain.Core
 {
-    public interface IDomainEvent<TAggregate, out TAggregateId> :
-        IDomainEvent
-        where TAggregate : IAggregateRoot<TAggregate, TAggregateId>
+    public interface IDomainEvent<TAggregate, out TAggregateEvent> :
+        IDomainEvent<TAggregate>
+        where TAggregate : IAggregateRoot
+        where TAggregateEvent : IAggregateEvent
     {
-        new TAggregateId AggregateId { get; }
-
-        new IAggregateEvent<TAggregate, TAggregateId> Data { get; }
+        new TAggregateEvent Data { get; }
     }
 }

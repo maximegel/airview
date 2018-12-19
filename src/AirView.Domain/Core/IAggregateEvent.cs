@@ -2,5 +2,6 @@
 {
     public interface IAggregateEvent
     {
+        string Name { get; }
     }
 }

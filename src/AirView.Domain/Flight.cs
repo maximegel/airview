@@ -3,7 +3,7 @@ using AirView.Domain.Core;
 
 namespace AirView.Domain
 {
-    public class Flight : AggregateRoot<Flight, Guid>
+    public class Flight : AggregateRoot<Guid>
     {
         public Flight(Guid id, string number) :
             base(id) =>

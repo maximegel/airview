@@ -14,7 +14,7 @@ namespace AirView.Domain.Core.Internal
 
         private readonly IAggregateRoot _aggregate;
 
-        public AggregateEventRouter(IAggregateRoot aggregate) => 
+        public AggregateEventRouter(IAggregateRoot aggregate) =>
             _aggregate = aggregate;
 
         public void Dispatch(IAggregateEvent @event) =>
@@ -31,9 +31,7 @@ namespace AirView.Domain.Core.Internal
                 .Where(method =>
                     method.Name == "Apply" &&
                     method.GetParameters().Length == 1 &&
-                    typeof(IAggregateEvent<,>)
-                        .MakeGenericType(aggregate.GetType(), aggregate.Id.GetType())
-                        .IsAssignableFrom(method.GetParameters().Single().ParameterType))
+                    typeof(IAggregateEvent).IsAssignableFrom(method.GetParameters().Single().ParameterType))
                 .Select(method => new KeyValuePair<Type, MethodInfo>(
                     method.GetParameters().Single().ParameterType,
                     method))

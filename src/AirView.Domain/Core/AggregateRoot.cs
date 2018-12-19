@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AirView.Domain.Core.Internal;
+using AirView.Shared;
 
 namespace AirView.Domain.Core
 {
@@ -15,26 +16,36 @@ namespace AirView.Domain.Core
     /// <remarks>
     ///     The root is the only member of the aggregate that outside objects are allowed to hold or references to.
     /// </remarks>
-    /// <typeparam name="TSelf"></typeparam>
     /// <typeparam name="TId"></typeparam>
-    public abstract class AggregateRoot<TSelf, TId> : Entity<TId>,
-        IAggregateRoot<TSelf, TId>
-        where TSelf : AggregateRoot<TSelf, TId>
+    public abstract class AggregateRoot<TId> : Entity<TId>,
+        IAggregateRoot<TId>
     {
         private readonly AggregateEventRouter _router;
-        private readonly ICollection<IDomainEvent<TSelf, TId>> _uncommitedEvents = new List<IDomainEvent<TSelf, TId>>();
+        private readonly ICollection<IDomainEvent> _uncommitedEvents = new List<IDomainEvent>();
 
         protected AggregateRoot(TId id) :
-            base(id) =>
+            base(id)
+        {
             _router = new AggregateEventRouter(this);
+            Name = GetType().Name;
+        }
+
+        protected virtual string Name { get; }
+
+        protected long Version { get; set; }
 
         void IAggregateRoot.ApplyEvent(IDomainEvent @event)
         {
-            if (!(@event is IDomainEvent<TSelf, TId>))
+            if (@event.AggregateVersion != Version + 1)
                 throw new ArgumentException(
-                    $"Domain event '{@event.GetType().Name}' cannot be applied to aggregate '{GetType().Name}'.");
+                    $"Domain event '{@event.GetType().GetFriendlyName()}' with aggregate version of {@event.AggregateVersion} " +
+                    $"cannot be applied to aggregate '{GetType().GetFriendlyName()}' at version {Version}.");
+            if (!typeof(IDomainEvent<>).MakeGenericType(GetType()).IsInstanceOfType(@event))
+                throw new ArgumentException(
+                    $"Domain event '{@event.GetType().GetFriendlyName()}' cannot be applied to aggregate '{GetType().GetFriendlyName()}'.");
 
-            ApplyEvent((IDomainEvent<TSelf, TId>) @event);
+            _router.Dispatch(@event.Data);
+            Version = @event.AggregateVersion;
         }
 
         void IAggregateRoot.ClearUncommitedEvents() =>
@@ -42,34 +53,22 @@ namespace AirView.Domain.Core
 
         object IAggregateRoot.Id => Id;
 
+        string IAggregateRoot.Name => Name;
+
+        void IAggregateRoot.RaiseEvent<TEvent>(TEvent @event) =>
+            Raise(@event);
+
         IEnumerable<IDomainEvent> IAggregateRoot.UncommittedEvents =>
             _uncommitedEvents;
 
-        public long Version { get; protected set; }
-
-        void IAggregateRoot<TSelf, TId>.ApplyEvent(IDomainEvent<TSelf, TId> @event) =>
-            ApplyEvent(@event);
-
-        IEnumerable<IDomainEvent<TSelf, TId>> IAggregateRoot<TSelf, TId>.UncommittedEvents =>
-            _uncommitedEvents;
+        long IAggregateRoot.Version => Version;
 
         protected void Raise<TEvent>(TEvent @event)
-            where TEvent : IAggregateEvent<TSelf, TId>
+            where TEvent : IAggregateEvent
         {
-            var domainEvent = new DomainEvent<TSelf, TId, TEvent>(Id, ++Version, @event);
+            var domainEvent = DomainEvent.Of(GetType(), Id, ++Version, @event);
             _router.Dispatch(domainEvent.Data);
             _uncommitedEvents.Add(domainEvent);
-        }
-
-        private void ApplyEvent(IDomainEvent<TSelf, TId> @event)
-        {
-            if (@event.AggregateVersion != Version + 1)
-                throw new ArgumentException(
-                    $"Domain event '{@event.GetType().Name}' with aggregate version of {@event.AggregateVersion} " +
-                    $"cannot be applied to aggregate '{GetType().Name}' at version {Version}.");
-
-            _router.Dispatch(@event.Data);
-            Version = @event.AggregateVersion;
         }
     }
 }

@@ -94,6 +94,7 @@ namespace AirView.Api
                 IWritableRepository<Guid, Flight>,
                 EntityFrameworkEventSourcedRepository<Guid, Flight, WriteDbContext>>();
             // == Application ==
+            // TODO(maximegelinas): Scan assemblies to register every command handlers and every event handlers at once.
             services.AddTransient<
                 ICommandHandler<RegisterFlightCommand, Result<CommandException<RegisterFlightCommand>, Guid>>,
                 RegisterFlightCommandHandler>();
@@ -112,14 +113,17 @@ namespace AirView.Api
                     .AddCommandHandler(provider.GetRequiredService<ICommandHandler<
                         UnregisterFlightCommand, Result<CommandException<UnregisterFlightCommand>>>>())
                     .Build());
-            services.AddTransient<IEventHandler<IDomainEvent<Flight, Guid, FlightRegistratedEvent>>, FlightProjector>();
-            services.AddTransient<IEventHandler<IDomainEvent<Flight, Guid, FlightScheduledEvent>>, FlightProjector>();
+            services.AddTransient<IEventHandler<IDomainEvent<Flight, FlightRegistratedEvent>>, FlightProjector>();
+            services.AddTransient<IEventHandler<IDomainEvent<Flight, FlightScheduledEvent>>, FlightProjector>();
+            services.AddTransient<IEventHandler<IDomainEvent<Flight, AggregateRemovedEvent>>, FlightProjector>();
             services.AddScoped<IEventPublisher, InMemoryBus>(provider =>
                 new InMemoryBusBuilder()
                     .AddEventHandler(provider.GetRequiredService<IEventHandler<
-                        IDomainEvent<Flight, Guid, FlightRegistratedEvent>>>())
+                        IDomainEvent<Flight, FlightRegistratedEvent>>>())
                     .AddEventHandler(provider.GetRequiredService<IEventHandler<
-                        IDomainEvent<Flight, Guid, FlightScheduledEvent>>>())
+                        IDomainEvent<Flight, FlightScheduledEvent>>>())
+                    .AddEventHandler(provider.GetRequiredService<IEventHandler<
+                        IDomainEvent<Flight, AggregateRemovedEvent>>>())
                     .Build());
 
             services.AddAutoMapper();

@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AirView.Shared.Railways.Internal.Option;
 
 namespace AirView.Shared.Railways
 {
     public static class OptionAdapters
     {
+        public static IEnumerable<TResult> Flatten<T, TResult>(
+            this IEnumerable<T> sequence, Func<T, Option<TResult>> map) =>
+            sequence.Select(map)
+                .OfType<Some<TResult>>()
+                .Select(some => (TResult) some);
+
         /// <summary>
         ///     Returns an option containing the first element of the sequence that satisfies a condition or a an empty option if
         ///     no such element is found.

@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using AirView.Domain.Core;
 using AirView.Domain.Core.Internal;
+using AirView.Persistence.Core.Internal;
 using AirView.Shared.Railways;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace AirView.Persistence.Core.EntityFramework.EventSourcing
 {
+    // TODO(maximegelinas): Move storage engine specific logic under a 'IEventLog' interface.
     public class EntityFrameworkEventSourcedRepository<TId, TAggregate, TDbContext> :
         IWritableRepository<TId, TAggregate>
-        where TAggregate : IAggregateRoot<TAggregate, TId>
+        where TAggregate : IAggregateRoot<TId>
         where TDbContext : EventSourcedDbContext
     {
         private readonly Func<TId, TAggregate> _aggregateFactory = AggregateFactory.CreateByReflexion<TAggregate, TId>;
@@ -37,7 +38,7 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
         public void Remove(TAggregate aggregate)
         {
             Attach(aggregate);
-            throw new NotImplementedException();
+            aggregate.RaiseEvent(AggregateRemovedEvent.Of(aggregate));
         }
 
         public async Task SaveAsync(CancellationToken cancellationToken)
@@ -49,21 +50,19 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
                     {
                         StreamId = aggregate.Id.ToString(),
                         StreamVersion = @event.AggregateVersion,
-                        Name = @event.Data.GetType().Name.Replace("Event", ""),
+                        Name = @event.Data.Name,
                         Timestamp = DateTimeOffset.UtcNow,
-                        Metadata = JsonConvert.SerializeObject(new
-                        {
-                            DataType = @event.Data.GetType().AssemblyQualifiedName
-                        }),
+                        Metadata = JsonConvert.SerializeObject(new {DataType = @event.Data.GetType().Name}),
                         Data = JsonConvert.SerializeObject(@event.Data)
                     })));
 
             await _context.SaveChangesAsync(cancellationToken);
-            await Task.WhenAll(_trakedAggregates.Values.Select(aggregate => 
-                PublishEvents(aggregate, cancellationToken)));
+            await Task.WhenAll(_trakedAggregates.Values.Select(aggregate =>
+                aggregate.PublishEventsAsync(_eventPublisher, cancellationToken)));
             _trakedAggregates.Clear();
         }
 
+        // TODO(maximegelinas): Use batch requests to avoid loading every events of a stream in memory at once.
         public async Task<Option<TAggregate>> TryFindAsync(TId id, CancellationToken cancellationToken)
         {
             var persistentEvents = await _context.Events
@@ -71,40 +70,23 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
                 .OrderBy(@event => @event.StreamVersion)
                 .ToArrayAsync(cancellationToken);
 
-            var domainEvents = persistentEvents
-                .Select(@event =>
-                {
-                    var metadata = JsonConvert.DeserializeObject<dynamic>(@event.Metadata);
-                    var dataType = Type.GetType((string) metadata.DataType);
-                    var evenType = typeof(DomainEvent<,,>).MakeGenericType(typeof(TAggregate), typeof(TId), dataType);
-
-                    return
-                        (IDomainEvent<TAggregate, TId>)
-                        evenType.GetConstructor(
-                                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance,
-                                null, new[] {typeof(TId), typeof(long), dataType}, null)
-                            ?.Invoke(new[]
-                            {
-                                (TId) (Guid.Parse(@event.StreamId) as object),
-                                @event.StreamVersion,
-                                JsonConvert.DeserializeObject(@event.Data, dataType)
-                            })
-                        ?? throw new InvalidOperationException($"Constructor not found for domain event '{evenType.Name}'.");
-                })
-                .ToList();
-
-            if (!persistentEvents.Any()) return Option.None;
-
-            var aggregate = _aggregateFactory(id);
-            domainEvents.ForEach(@event => aggregate.ApplyEvent(@event));
-
-            Attach(aggregate);
-            return aggregate;
+            return persistentEvents
+                .Flatten(@event =>
+                    typeof(TAggregate).Assembly.GetTypes()
+                        .Where(type =>
+                            type.Name == (string) JsonConvert.DeserializeObject<dynamic>(@event.Metadata).DataType)
+                        .TrySingle(type => type.GetInterfaces().Any(@interface =>
+                            @interface == typeof(IAggregateEvent)))
+                        .Map(dataType => dataType.IsGenericType && dataType.GetGenericArguments().Length == 2
+                            ? dataType.MakeGenericType(typeof(TAggregate), typeof(TId))
+                            : dataType)
+                        .Map(dataType => DomainEvent.Of<TAggregate>(
+                            (TId) (Guid.Parse(@event.StreamId) as object),
+                            @event.StreamVersion,
+                            dataType, JsonConvert.DeserializeObject(@event.Data, dataType))))
+                .DefaultIfEmpty(DomainEvent.Of<TAggregate>(id, 0, AggregateNeverCreatedEvent.Instance))
+                .Aggregate(Option.Some(_aggregateFactory(id)), (aggregate, @event) => @event.ApplyTo(aggregate))
+                .Do(Attach);
         }
-
-        private Task PublishEvents(TAggregate aggregate, CancellationToken cancellationToken) =>
-            Task.WhenAll(aggregate.UncommittedEvents.Select(@event =>
-                    _eventPublisher.PublishAsync(@event, cancellationToken)))
-                .ContinueWith(_ => aggregate.ClearUncommitedEvents(), cancellationToken);
     }
 }

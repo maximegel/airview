@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace AirView.Domain.Core
+﻿namespace AirView.Domain.Core
 {
     /// <inheritdoc cref="IEntity{TId}" />
     /// <summary>
@@ -13,14 +11,14 @@ namespace AirView.Domain.Core
     /// <remarks>
     ///     The root is the only member of the aggregate that outside objects are allowed to hold or references to.
     /// </remarks>
-    /// <typeparam name="TSelf"></typeparam>
     /// <typeparam name="TId"></typeparam>
-    public interface IAggregateRoot<TSelf, TId> :
-        IAggregateRoot<TId>
-        where TSelf : IAggregateRoot<TSelf, TId>
+    public interface IAggregateRoot<out TId> :
+        IAggregateRoot,
+        IEntity<TId>
     {
-        new IEnumerable<IDomainEvent<TSelf, TId>> UncommittedEvents { get; }
-
-        void ApplyEvent(IDomainEvent<TSelf, TId> @event);
+        /// <summary>
+        ///     Identifier that make the aggreggate root unique.
+        /// </summary>
+        new TId Id { get; }
     }
 }

@@ -7,7 +7,7 @@ namespace AirView.Domain.Core.Internal
 {
     public static class AggregateFactory
     {
-        // TODO(maximegelinas): Cache constructor actions or empty instances to reduce reflexion calls.
+        // TODO(maximegelinas): Store found constructors in memory (i.e. static field) to reduce reflexion calls.
         public static TAggregate CreateByReflexion<TAggregate, TAggregateId>(TAggregateId id)
             where TAggregate : IAggregateRoot<TAggregateId> =>
             typeof(TAggregate)
@@ -26,7 +26,9 @@ namespace AirView.Domain.Core.Internal
                 .Do(aggregate =>
                 {
                     aggregate.GetType().GetProperty(nameof(IAggregateRoot.Id))?.SetValue(aggregate, id);
-                    aggregate.GetType().GetProperty(nameof(IAggregateRoot.Version))?.SetValue(aggregate, 0);
+                    aggregate.GetType()
+                        .GetProperty(nameof(IAggregateRoot.Version), BindingFlags.NonPublic | BindingFlags.Instance)
+                        ?.SetValue(aggregate, 0);
                     aggregate.ClearUncommitedEvents();
                 })
                 .Reduce(() => throw new InvalidOperationException(

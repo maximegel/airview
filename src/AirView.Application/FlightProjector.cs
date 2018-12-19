@@ -10,8 +10,9 @@ using AirView.Shared.Railways;
 namespace AirView.Application
 {
     public class FlightProjector :
-        IEventHandler<IDomainEvent<Flight, Guid, FlightRegistratedEvent>>,
-        IEventHandler<IDomainEvent<Flight, Guid, FlightScheduledEvent>>
+        IEventHandler<IDomainEvent<Flight, FlightRegistratedEvent>>,
+        IEventHandler<IDomainEvent<Flight, FlightScheduledEvent>>,
+        IEventHandler<IDomainEvent<Flight, AggregateRemovedEvent>>
     {
         private readonly IWritableRepository<Guid, FlightProjection> _repository;
         private readonly IReadUnitOfWork _unitOfWork;
@@ -23,9 +24,23 @@ namespace AirView.Application
         }
 
         public async Task HandleAsync(
-            IDomainEvent<Flight, Guid, FlightRegistratedEvent> @event, CancellationToken cancellationToken)
+            IDomainEvent<Flight, AggregateRemovedEvent> @event, CancellationToken cancellationToken)
         {
-            _repository.Add(new FlightProjection(@event.AggregateId)
+            var id = @event.AggregateId;
+            (await _repository.TryFindAsync((Guid) id, cancellationToken))
+                .Do(async flight =>
+                {
+                    _repository.Remove(flight);
+                    await _repository.SaveAsync(cancellationToken);
+                    _unitOfWork.Commit();
+                })
+                .Reduce(() => throw new ApplicationException($"Flight projection with identifier '{id}' not found."));
+        }
+
+        public async Task HandleAsync(
+            IDomainEvent<Flight, FlightRegistratedEvent> @event, CancellationToken cancellationToken)
+        {
+            _repository.Add(new FlightProjection((Guid) @event.AggregateId)
             {
                 Number = @event.Data.Number
             });
@@ -35,10 +50,10 @@ namespace AirView.Application
         }
 
         public async Task HandleAsync(
-            IDomainEvent<Flight, Guid, FlightScheduledEvent> @event, CancellationToken cancellationToken)
+            IDomainEvent<Flight, FlightScheduledEvent> @event, CancellationToken cancellationToken)
         {
             var id = @event.AggregateId;
-            (await _repository.TryFindAsync(id, cancellationToken))
+            (await _repository.TryFindAsync((Guid) id, cancellationToken))
                 .Do(async flight =>
                 {
                     flight.DepartureTime = @event.Data.DepartureTime;
