@@ -82,8 +82,8 @@ namespace AirView.Api
                 options.UseSqlServer(Configuration.GetConnectionString("Read")));
             services.AddDbContext<WriteDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("Write")));
-            services.AddScoped<IReadUnitOfWork, EntityFrameworkUnitOfWork<ReadDbContext>>();
-            services.AddScoped<IWriteUnitOfWork, EntityFrameworkUnitOfWork<WriteDbContext>>();
+            services.AddTransient<IReadUnitOfWork, EntityFrameworkUnitOfWork<ReadDbContext>>();
+            services.AddTransient<IWriteUnitOfWork, EntityFrameworkUnitOfWork<WriteDbContext>>();
             services.AddTransient<
                 IQueryableRepository<Guid, FlightProjection>,
                 EntityFrameworkRepository<Guid, FlightProjection, ReadDbContext>>();
