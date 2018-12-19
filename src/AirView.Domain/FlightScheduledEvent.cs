@@ -3,7 +3,8 @@ using AirView.Domain.Core;
 
 namespace AirView.Domain
 {
-    public class FlightScheduledEvent : AggregateEvent
+    public class FlightScheduledEvent : 
+        IAggregateEvent
     {
         public FlightScheduledEvent(DateTime departureTime, DateTime arrivalTime)
         {

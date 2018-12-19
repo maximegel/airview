@@ -50,7 +50,7 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
                     {
                         StreamId = aggregate.Id.ToString(),
                         StreamVersion = @event.AggregateVersion,
-                        Name = @event.Data.Name,
+                        Name = @event.Data.GetName(aggregate),
                         Timestamp = DateTimeOffset.UtcNow,
                         Metadata = JsonConvert.SerializeObject(new {DataType = @event.Data.GetType().Name}),
                         Data = JsonConvert.SerializeObject(@event.Data)

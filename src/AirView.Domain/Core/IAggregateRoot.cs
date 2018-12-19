@@ -20,8 +20,6 @@ namespace AirView.Domain.Core
         /// </summary>
         object Id { get; }
 
-        string Name { get; }
-
         IEnumerable<IDomainEvent> UncommittedEvents { get; }
 
         long Version { get; }

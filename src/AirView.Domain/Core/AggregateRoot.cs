@@ -53,8 +53,6 @@ namespace AirView.Domain.Core
 
         object IAggregateRoot.Id => Id;
 
-        string IAggregateRoot.Name => Name;
-
         void IAggregateRoot.RaiseEvent<TEvent>(TEvent @event) =>
             Raise(@event);
 
