@@ -24,13 +24,8 @@ namespace AirView.Domain.Core
         private readonly ICollection<IDomainEvent> _uncommitedEvents = new List<IDomainEvent>();
 
         protected AggregateRoot(TId id) :
-            base(id)
-        {
+            base(id) => 
             _router = new AggregateEventRouter(this);
-            Name = GetType().Name;
-        }
-
-        protected virtual string Name { get; }
 
         protected long Version { get; set; }
 
@@ -50,8 +45,6 @@ namespace AirView.Domain.Core
 
         void IAggregateRoot.ClearUncommitedEvents() =>
             _uncommitedEvents.Clear();
-
-        object IAggregateRoot.Id => Id;
 
         void IAggregateRoot.RaiseEvent<TEvent>(TEvent @event) =>
             Raise(@event);

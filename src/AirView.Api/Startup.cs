@@ -82,17 +82,17 @@ namespace AirView.Api
                 options.UseSqlServer(Configuration.GetConnectionString("Read")));
             services.AddDbContext<WriteDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("Write")));
-            services.AddTransient<IReadUnitOfWork, EntityFrameworkUnitOfWork<ReadDbContext>>();
-            services.AddTransient<IWriteUnitOfWork, EntityFrameworkUnitOfWork<WriteDbContext>>();
-            services.AddTransient<
-                IQueryableRepository<Guid, FlightProjection>,
-                EntityFrameworkRepository<Guid, FlightProjection, ReadDbContext>>();
-            services.AddTransient<
-                IWritableRepository<Guid, FlightProjection>,
-                EntityFrameworkRepository<Guid, FlightProjection, ReadDbContext>>();
-            services.AddTransient<
-                IWritableRepository<Guid, Flight>,
-                EntityFrameworkEventSourcedRepository<Guid, Flight, WriteDbContext>>();
+            services.AddScoped<IReadUnitOfWork>(provider =>
+                new EntityFrameworkUnitOfWork(provider.GetRequiredService<ReadDbContext>()));
+            services.AddScoped<IWriteUnitOfWork>(provider =>
+                new EntityFrameworkUnitOfWork(provider.GetRequiredService<WriteDbContext>()));
+            services.AddScoped<IQueryableRepository<FlightProjection>>(provider =>
+                new EntityFrameworkRepository<FlightProjection>(provider.GetRequiredService<ReadDbContext>()));
+            services.AddScoped<IWritableRepository<FlightProjection>>(provider =>
+                new EntityFrameworkRepository<FlightProjection>(provider.GetRequiredService<ReadDbContext>()));
+            services.AddScoped<IWritableRepository<Flight>>(provider =>
+                new EntityFrameworkEventSourcedRepository<Flight>(
+                    provider.GetRequiredService<WriteDbContext>(), provider.GetRequiredService<IEventPublisher>()));
             // == Application ==
             // TODO(maximegelinas): Scan assemblies to register every command handlers and every event handlers at once.
             services.AddTransient<

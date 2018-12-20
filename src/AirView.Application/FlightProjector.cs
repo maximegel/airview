@@ -14,10 +14,10 @@ namespace AirView.Application
         IEventHandler<IDomainEvent<Flight, FlightScheduledEvent>>,
         IEventHandler<IDomainEvent<Flight, AggregateRemovedEvent>>
     {
-        private readonly IWritableRepository<Guid, FlightProjection> _repository;
+        private readonly IWritableRepository<FlightProjection> _repository;
         private readonly IReadUnitOfWork _unitOfWork;
 
-        public FlightProjector(IWritableRepository<Guid, FlightProjection> repository, IReadUnitOfWork unitOfWork)
+        public FlightProjector(IWritableRepository<FlightProjection> repository, IReadUnitOfWork unitOfWork)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
@@ -27,7 +27,7 @@ namespace AirView.Application
             IDomainEvent<Flight, AggregateRemovedEvent> @event, CancellationToken cancellationToken)
         {
             var id = @event.AggregateId;
-            (await _repository.TryFindAsync((Guid) id, cancellationToken))
+            (await _repository.TryFindAsync(id, cancellationToken))
                 .Do(async flight =>
                 {
                     _repository.Remove(flight);
@@ -53,7 +53,7 @@ namespace AirView.Application
             IDomainEvent<Flight, FlightScheduledEvent> @event, CancellationToken cancellationToken)
         {
             var id = @event.AggregateId;
-            (await _repository.TryFindAsync((Guid) id, cancellationToken))
+            (await _repository.TryFindAsync(id, cancellationToken))
                 .Do(async flight =>
                 {
                     flight.DepartureTime = @event.Data.DepartureTime;

@@ -5,9 +5,9 @@ using AirView.Shared.Railways;
 
 namespace AirView.Persistence.Core
 {
-    public interface IWritableRepository<in TId, TEntity> :
-        IRepository<TId, TEntity>
-        where TEntity : IEntity<TId>
+    public interface IWritableRepository<TEntity> :
+        IRepository<TEntity>
+        where TEntity : IEntity
     {
         void Add(TEntity entity);
 
@@ -17,6 +17,6 @@ namespace AirView.Persistence.Core
 
         Task SaveAsync(CancellationToken cancellationToken = default);
 
-        Task<Option<TEntity>> TryFindAsync(TId id, CancellationToken cancellationToken = default);
+        Task<Option<TEntity>> TryFindAsync(object id, CancellationToken cancellationToken = default);
     }
 }

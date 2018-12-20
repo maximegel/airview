@@ -13,13 +13,9 @@ namespace AirView.Domain.Core
     /// <remarks>
     ///     The root is the only member of the aggregate that outside objects are allowed to hold or references to.
     /// </remarks>
-    public interface IAggregateRoot
+    public interface IAggregateRoot :
+        IEntity
     {
-        /// <summary>
-        ///     Identifier that make the aggreggate root unique.
-        /// </summary>
-        object Id { get; }
-
         IEnumerable<IDomainEvent> UncommittedEvents { get; }
 
         long Version { get; }

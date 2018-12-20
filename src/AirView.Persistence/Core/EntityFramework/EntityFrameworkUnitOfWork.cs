@@ -1,16 +1,14 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AirView.Persistence.Core.EntityFramework
 {
-    public sealed class EntityFrameworkUnitOfWork<TDbContext> :
+    public sealed class EntityFrameworkUnitOfWork :
         IReadUnitOfWork, IWriteUnitOfWork
-        where TDbContext : DbContext
     {
         private readonly IDbContextTransaction _transaction;
 
-        public EntityFrameworkUnitOfWork(TDbContext context) => 
+        public EntityFrameworkUnitOfWork(DbContext context) =>
             _transaction = context.Database.CurrentTransaction ?? context.Database.BeginTransaction();
 
         public void Dispose()

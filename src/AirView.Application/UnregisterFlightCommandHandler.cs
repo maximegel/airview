@@ -12,10 +12,10 @@ namespace AirView.Application
     public class UnregisterFlightCommandHandler :
         ICommandHandler<UnregisterFlightCommand, Result<CommandException<UnregisterFlightCommand>>>
     {
-        private readonly IWritableRepository<Guid, Flight> _repository;
+        private readonly IWritableRepository<Flight> _repository;
         private readonly IWriteUnitOfWork _unitOfWork;
 
-        public UnregisterFlightCommandHandler(IWritableRepository<Guid, Flight> repository, IWriteUnitOfWork unitOfWork)
+        public UnregisterFlightCommandHandler(IWritableRepository<Flight> repository, IWriteUnitOfWork unitOfWork)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;

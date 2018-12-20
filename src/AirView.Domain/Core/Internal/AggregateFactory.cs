@@ -8,8 +8,8 @@ namespace AirView.Domain.Core.Internal
     public static class AggregateFactory
     {
         // TODO(maximegelinas): Store found constructors in memory (i.e. static field) to reduce reflexion calls.
-        public static TAggregate CreateByReflexion<TAggregate, TAggregateId>(TAggregateId id)
-            where TAggregate : IAggregateRoot<TAggregateId> =>
+        public static TAggregate CreateByReflexion<TAggregate>(object id)
+            where TAggregate : IAggregateRoot =>
             typeof(TAggregate)
                 .GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .OrderByDescending(ctor => ctor.IsPrivate)

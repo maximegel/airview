@@ -5,10 +5,10 @@ using AirView.Shared.Railways;
 
 namespace AirView.Persistence.Core
 {
-    public interface IReadableRepository<in TId, TEntity> :
-        IRepository<TId, TEntity>
-        where TEntity : IEntity<TId>
+    public interface IReadableRepository<TEntity> :
+        IRepository<TEntity>
+        where TEntity : IEntity
     {
-        Task<Option<TEntity>> TryFindAsync(TId id, CancellationToken cancellationToken = default);
+        Task<Option<TEntity>> TryFindAsync(object id, CancellationToken cancellationToken = default);
     }
 }

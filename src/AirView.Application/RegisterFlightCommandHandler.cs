@@ -12,10 +12,10 @@ namespace AirView.Application
         // TODO(maximegelinas): Create a abstract class that implement 'ICommandHandler<TCommand, Result<CommandException<TCommand>, TSuccess>>'.
         ICommandHandler<RegisterFlightCommand, Result<CommandException<RegisterFlightCommand>, Guid>>
     {
-        private readonly IWritableRepository<Guid, Flight> _repository;        
+        private readonly IWritableRepository<Flight> _repository;        
         private readonly IWriteUnitOfWork _unitOfWork;
 
-        public RegisterFlightCommandHandler(IWritableRepository<Guid, Flight> repository, IWriteUnitOfWork unitOfWork)
+        public RegisterFlightCommandHandler(IWritableRepository<Flight> repository, IWriteUnitOfWork unitOfWork)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;

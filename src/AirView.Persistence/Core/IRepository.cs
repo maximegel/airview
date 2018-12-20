@@ -2,8 +2,8 @@
 
 namespace AirView.Persistence.Core
 {
-    public interface IRepository<in TId, out TEntity>
-        where TEntity : IEntity<TId>
+    public interface IRepository<out TEntity>
+        where TEntity : IEntity
     {
     }
 }

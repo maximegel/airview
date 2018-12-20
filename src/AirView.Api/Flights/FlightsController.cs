@@ -18,10 +18,10 @@ namespace AirView.Api.Flights
     {
         private readonly ICommandSender _commandSender;
         private readonly IMapper _mapper;
-        private readonly IQueryableRepository<Guid, FlightProjection> _queryableRepository;
+        private readonly IQueryableRepository<FlightProjection> _queryableRepository;
 
         public FlightsController(ICommandSender commandSender, IMapper mapper,
-            IQueryableRepository<Guid, FlightProjection> queryableRepository)
+            IQueryableRepository<FlightProjection> queryableRepository)
         {
             _commandSender = commandSender;
             _mapper = mapper;

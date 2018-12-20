@@ -3,9 +3,9 @@ using AirView.Domain.Core;
 
 namespace AirView.Persistence.Core
 {
-    public interface IQueryableRepository<in TId, TEntity> :
-        IReadableRepository<TId, TEntity>
-        where TEntity : IEntity<TId>
+    public interface IQueryableRepository<TEntity> :
+        IReadableRepository<TEntity>
+        where TEntity : IEntity
     {
         IQueryable<TEntity> QueryAll();
     }
