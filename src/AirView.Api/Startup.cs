@@ -1,6 +1,9 @@
-﻿using System;
+using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using AirView.Api.Core;
+using AirView.Api.Core.Internal;
 using AirView.Application;
 using AirView.Application.Core;
 using AirView.Domain;
@@ -11,15 +14,17 @@ using AirView.Persistence.Core.EntityFramework;
 using AirView.Persistence.Core.EntityFramework.EventSourcing;
 using AirView.Shared.Railways;
 using AutoMapper;
+using GlobalExceptionHandler.ContentNegotiation.Mvc;
+using GlobalExceptionHandler.WebApi;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace AirView.Api
 {
@@ -40,26 +45,34 @@ namespace AirView.Api
             if (!env.IsDevelopment())
                 app.UseHsts();
 
-            // TODO(maximegelinas): Use 'GlobalExceptionHandler' nuget package.
-            // TODO(maximegelinas): Return errors as 'ProblemDetails'.
-            app.UseExceptionHandler(appBuilder =>
-                appBuilder.Run(async context =>
+            app.UseGlobalExceptionHandler(options =>
+            {
+                options.ContentType = "application/problem+json";
+                options.Map<Exception>().ToStatusCode(HttpStatusCode.InternalServerError).WithBody(exception =>
                 {
-                    var exceptionFeature = context.Features.Get<IExceptionHandlerFeature>();
-                    var exception = exceptionFeature.Error;
+                    object problemDetails = new ProblemDetails
+                    {
+                        Type = "about:blank",
+                        Title = "An unexpected error happened.",
+                        Status = (int?) HttpStatusCode.InternalServerError,
+                        Detail = env.IsDevelopment()
+                            ? exception.Message
+                            : "We are unable to give you more detail about this error. Please try again and contact support if the problem persists.",
+                        Instance = "about:blank"
+                    };
 
-                    var result = env.IsDevelopment()
-                        ? new
+                    if (env.IsDevelopment())
+                        problemDetails = problemDetails.Assign(new
                         {
-                            exception.Message,
-                            StackTrace = exception.StackTrace.Split("\r\n").Select(line => line.Trim()).ToArray()
-                        }
-                        : new {Message = "An unexpected fault happened. Please try again later."} as object;
+                            StackTrace = exception.Demystify().StackTrace
+                                .Split("\r\n")
+                                .Select(line => line.Trim())
+                                .ToArray()
+                        });
 
-                    context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
-                    context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync(JsonConvert.SerializeObject(result));
-                }));
+                    return problemDetails;
+                });
+            });
 
             app.UseHttpsRedirection();
             app.UseMvc();
@@ -125,9 +138,51 @@ namespace AirView.Api
                     .AddEventHandler(provider.GetRequiredService<IEventHandler<
                         IDomainEvent<Flight, AggregateRemovedEvent>>>())
                     .Build());
+            services.Configure<ApiBehaviorOptions>(options =>
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    context.HttpContext.Response.ContentType = "application/problem+json";
 
-            services.AddAutoMapper();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+                    return context.GetPathErrors().TryFirst()
+                        .Map(modelError => new BadRequestObjectResult(new ProblemDetails
+                        {
+                            Type = "about:blank",
+                            Title = "The given request URL is not valid.",
+                            Status = (int?) HttpStatusCode.BadRequest,
+                            Detail = modelError.ErrorMessage,
+                            Instance = "about:blank"
+                        }) as IActionResult)
+                        .Reduce(() => context.GetUnsupportedContentTypeError()
+                            .Map(modelError => new ObjectResult(new ProblemDetails
+                            {
+                                Type = "about:blank",
+                                Title = "The given content type is not supported.",
+                                Status = (int?) HttpStatusCode.UnsupportedMediaType,
+                                Detail = modelError.Exception.Message,
+                                Instance = "about:blank"
+                            }) {StatusCode = (int?) HttpStatusCode.UnsupportedMediaType} as IActionResult)
+                            .Reduce(() => context.GetBodyErrors().TryFirst()
+                                .Map(modelError => new BadRequestObjectResult(new ProblemDetails
+                                {
+                                    Type = "about:blank",
+                                    Title = "The given request body is not valid.",
+                                    Status = (int?) HttpStatusCode.BadRequest,
+                                    Detail = modelError.ErrorMessage,
+                                    Instance = "about:blank"
+                                }) as IActionResult)
+                                .Reduce(() => new UnprocessableEntityObjectResult(
+                                    new ProblemDetails
+                                    {
+                                        Type = "about:blank",
+                                        Title = "One or more validation errors occurred.",
+                                        Status = (int?) HttpStatusCode.UnprocessableEntity,
+                                        Detail = "See errors for details.",
+                                        Instance = "about:blank"
+                                    }.Assign(new
+                                    {
+                                        Errors = new SerializableError(context.ModelState)
+                                    })))));
+                });
         }
     }
 }

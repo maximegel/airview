@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 
 namespace AirView.Domain.Core
 {
@@ -38,6 +39,7 @@ namespace AirView.Domain.Core
 
         object IEntity.Id => Id;
 
+        [JsonProperty(Order = -9)]
         public TId Id { get; protected set; }
 
         public static bool operator ==(Entity<TId> left, IEntity right) =>
