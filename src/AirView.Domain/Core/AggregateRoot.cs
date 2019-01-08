@@ -1,65 +1,52 @@
 ﻿using System;
-using System.Collections.Generic;
-using AirView.Domain.Core.Internal;
+using System.Linq;
+using System.Reflection;
 using AirView.Shared;
+using AirView.Shared.Railways;
 
 namespace AirView.Domain.Core
 {
-    /// <inheritdoc cref="Entity{TId}" />
-    /// <summary>
-    ///     Represents the entry point or the root of the aggregate.
-    ///     An aggregate is a cluster of associated objects that we treat as a unit for the purpose of data changes. Each
-    ///     aggregate has a root and a boundary. The boundary defines what is inside the aggregate. The root is a single,
-    ///     specific entity contained in the aggregate.
-    ///     <see href="https://lostechies.com/jimmybogard/2008/05/21/entities-value-objects-aggregates-and-roots/" />
-    /// </summary>
-    /// <remarks>
-    ///     The root is the only member of the aggregate that outside objects are allowed to hold or references to.
-    /// </remarks>
-    /// <typeparam name="TId"></typeparam>
-    public abstract class AggregateRoot<TId> : Entity<TId>,
-        IAggregateRoot<TId>
+    public static class AggregateRoot
     {
-        private readonly AggregateEventRouter _router;
-        private readonly ICollection<IDomainEvent> _uncommitedEvents = new List<IDomainEvent>();
-
-        protected AggregateRoot(TId id) :
-            base(id) => 
-            _router = new AggregateEventRouter(this);
-
-        protected long Version { get; set; }
-
-        void IAggregateRoot.ApplyEvent(IDomainEvent @event)
-        {
-            if (@event.AggregateVersion != Version + 1)
-                throw new ArgumentException(
-                    $"Domain event '{@event.GetType().GetFriendlyName()}' with aggregate version of {@event.AggregateVersion} " +
-                    $"cannot be applied to aggregate '{GetType().GetFriendlyName()}' at version {Version}.");
-            if (!typeof(IDomainEvent<>).MakeGenericType(GetType()).IsInstanceOfType(@event))
-                throw new ArgumentException(
-                    $"Domain event '{@event.GetType().GetFriendlyName()}' cannot be applied to aggregate '{GetType().GetFriendlyName()}'.");
-
-            _router.Dispatch(@event.Data);
-            Version = @event.AggregateVersion;
-        }
-
-        void IAggregateRoot.ClearUncommitedEvents() =>
-            _uncommitedEvents.Clear();
-
-        void IAggregateRoot.RaiseEvent<TEvent>(TEvent @event) =>
-            Raise(@event);
-
-        IEnumerable<IDomainEvent> IAggregateRoot.UncommittedEvents =>
-            _uncommitedEvents;
-
-        long IAggregateRoot.Version => Version;
-
-        protected void Raise<TEvent>(TEvent @event)
-            where TEvent : IAggregateEvent
-        {
-            var domainEvent = DomainEvent.Of(GetType(), Id, ++Version, @event);
-            _router.Dispatch(domainEvent.Data);
-            _uncommitedEvents.Add(domainEvent);
-        }
+        // TODO(maximegelinas): Store found constructors in memory (i.e. static field) to reduce reflexion calls.
+        public static TAggregate New<TAggregate>(object id)
+            where TAggregate : IAggregateRoot =>
+            typeof(TAggregate)
+                .GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                .OrderByDescending(ctor => ctor.IsPrivate)
+                .ThenBy(ctor => ctor.GetParameters().Length)
+                .TryFirst()
+                .Map(ctor => (ctor, paramTypes: ctor.GetParameters().Select(param => param.ParameterType)))
+                .Map(pair => (
+                    pair.ctor,
+                    @params: pair.paramTypes
+                        .Select(type => type.IsValueType ? Activator.CreateInstance(type) : null)
+                        .ToArray()))
+                .Map(pair =>
+                {
+                    try
+                    {
+                        return pair.ctor.Invoke(pair.@params);
+                    }
+                    catch (Exception e)
+                    {
+                        throw new AggregateConstructionException(
+                            $"Failed to construct aggregate '{typeof(TAggregate).GetFriendlyName()}' using constructor '{pair.ctor.GetFriendlySignature()}'. " +
+                            "This is probably du to arguments validation in this constructor. To fix this issue, try to add a private parameterless constructor " +
+                            $"without any logic in the class you want to construct (i.e. {typeof(TAggregate).GetFriendlyName()}).",
+                            e);
+                    }
+                })
+                .Map(instance => (TAggregate) instance)
+                .Do(aggregate =>
+                {
+                    aggregate.GetType().GetProperty(nameof(IAggregateRoot.Id))?.SetValue(aggregate, id);
+                    aggregate.GetType()
+                        .GetProperty(nameof(IAggregateRoot.Version), BindingFlags.NonPublic | BindingFlags.Instance)
+                        ?.SetValue(aggregate, 0);
+                    aggregate.ClearUncommitedEvents();
+                })
+                .Reduce(() => throw new AggregateConstructionException(
+                    $"Constructor not found for aggregate '{typeof(TAggregate).GetFriendlyName()}'."));
     }
 }

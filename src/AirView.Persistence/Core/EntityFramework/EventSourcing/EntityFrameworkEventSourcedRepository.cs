@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AirView.Domain.Core;
-using AirView.Domain.Core.Internal;
 using AirView.Persistence.Core.Internal;
 using AirView.Shared.Railways;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +16,6 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
         IWritableRepository<TAggregate>
         where TAggregate : IAggregateRoot
     {
-        private readonly Func<object, TAggregate> _aggregateFactory = AggregateFactory.CreateByReflexion<TAggregate>;
         private readonly EventSourcedDbContext _context;
         private readonly IEventPublisher _eventPublisher;
         private readonly IDictionary<object, TAggregate> _trakedAggregates = new Dictionary<object, TAggregate>();
@@ -50,6 +48,7 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
                         StreamId = aggregate.Id.ToString(),
                         StreamVersion = @event.AggregateVersion,
                         Name = @event.Data.GetName(aggregate),
+                        // TODO(maximegelinas): Use 'IClock' interface.
                         Timestamp = DateTimeOffset.UtcNow,
                         Metadata = JsonConvert.SerializeObject(new {DataType = @event.Data.GetType().Name}),
                         Data = JsonConvert.SerializeObject(@event.Data)
@@ -81,7 +80,7 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
                             @event.StreamVersion,
                             dataType, JsonConvert.DeserializeObject(@event.Data, dataType))))
                 .DefaultIfEmpty(DomainEvent.Of<TAggregate>(id, 0, AggregateNeverCreatedEvent.Instance))
-                .Aggregate(Option.Some(_aggregateFactory(id)), (aggregate, @event) => @event.ApplyTo(aggregate))
+                .Aggregate(Option.Some(AggregateRoot.New<TAggregate>(id)), (aggregate, @event) => @event.ApplyTo(aggregate))
                 .Do(Attach);
         }
     }
