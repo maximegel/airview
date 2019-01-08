@@ -22,7 +22,7 @@ namespace AirView.Persistence.Core.EntityFramework
             _set = _context.Set<TEntity>();
         }
 
-        public IQueryable<TEntity> QueryAll() =>
+        public IQueryable<TEntity> Query() =>
             _set.AsNoTracking();
 
         Task<Option<TEntity>> IReadableRepository<TEntity>.TryFindAsync(

@@ -7,6 +7,6 @@ namespace AirView.Persistence.Core
         IReadableRepository<TEntity>
         where TEntity : IEntity
     {
-        IQueryable<TEntity> QueryAll();
+        IQueryable<TEntity> Query();
     }
 }
