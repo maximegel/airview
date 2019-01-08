@@ -7,11 +7,12 @@ namespace AirView.Shared.Railways
 {
     public static class OptionAdapters
     {
+        public static IEnumerable<T> Flatten<T>(this IEnumerable<Option<T>> sequence) =>
+            sequence.OfType<Some<T>>().Select(some => (T)some);
+
         public static IEnumerable<TResult> Flatten<T, TResult>(
-            this IEnumerable<T> sequence, Func<T, Option<TResult>> map) =>
-            sequence.Select(map)
-                .OfType<Some<TResult>>()
-                .Select(some => (TResult) some);
+            this IEnumerable<T> sequence, Func<T, Option<TResult>> mapper) =>
+            sequence.Select(mapper).Flatten();
 
         /// <summary>
         ///     Returns an option containing the first element of the sequence that satisfies a condition or a an empty option if

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -138,6 +138,17 @@ namespace AirView.Api
                     .AddEventHandler(provider.GetRequiredService<IEventHandler<
                         IDomainEvent<Flight, AggregateRemovedEvent>>>())
                     .Build());
+            // == Api ==
+            services.AddAutoMapper();
+            services.AddMvc(options =>
+                    options.OutputFormatters.Add(
+                        HalOutputFormatter.ForJson(options.OutputFormatters.OfType<JsonOutputFormatter>().First())))
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                });
             services.Configure<ApiBehaviorOptions>(options =>
                 options.InvalidModelStateResponseFactory = context =>
                 {

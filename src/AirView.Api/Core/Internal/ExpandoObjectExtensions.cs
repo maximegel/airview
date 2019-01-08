@@ -10,7 +10,7 @@ namespace AirView.Api.Core.Internal
             Assign(expando, other.ToExpando());
 
         public static ExpandoObject Assign(this ExpandoObject expando, ExpandoObject other) =>
-            (ExpandoObject) ((IDictionary<string, object>) other).Aggregate(
+            (ExpandoObject) other.Aggregate(
                 (IDictionary<string, object>) expando,
                 (current, property) =>
                 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AirView.Api.Core;
 using AirView.Application;
 using AirView.Application.Core;
 using AirView.Application.Core.Exceptions;
@@ -28,51 +29,78 @@ namespace AirView.Api.Flights
             _queryableRepository = queryableRepository;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll() =>
-            Ok(await _queryableRepository
-                .QueryAll()
-                .ToListAsync());
-
-        [HttpGet("{id}", Name = "get-flight")]
-        public async Task<IActionResult> GetById(Guid id) =>
+        [HttpGet("{id}", Name = "find")]
+        public async Task<IActionResult> Find(Guid id) =>
             (await _queryableRepository.TryFindAsync(id))
+            .Do(AddLinks)
             .Map<FlightProjection, IActionResult>(Ok)
             .Reduce(NotFound);
 
-        [HttpPost]
-        public async Task<IActionResult> Register([FromBody] RegisterFlightDto dto)
+        [HttpGet(Name = "query")]
+        public async Task<IActionResult> Query(int limit = 50, int offset = 0)
         {
-            if (dto == null) return BadRequest();
-
-            return (await _commandSender.SendAsync(_mapper.Map<RegisterFlightCommand>(dto)))
-                .Map(id => Accepted(Link(id)) as IActionResult)
-                .ReduceOrThrow();
+            var query = _queryableRepository.Query().Paginate(limit, offset);
+            var dto = await query.ToCollectionDtoAsync(await _queryableRepository.Query().CountAsync());
+            AddLinks(dto, query);
+            return Ok(dto);
         }
 
-        [HttpPut("{id}/schedule")]
+        [HttpPost(Name = "register")]
+        public async Task<IActionResult> Register([FromBody] RegisterFlightDto dto) =>
+            (await _commandSender.SendAsync(_mapper.Map<RegisterFlightCommand>(dto)))
+            .Map(id => Accepted(Url.RouteUrl("find", new {id})) as IActionResult)
+            .ReduceOrThrow();
+
+        [HttpPut("{id}/schedule", Name = "schedule")]
         public async Task<IActionResult> Schedule(Guid id, [FromBody] ScheduleFlightDto dto)
         {
-            if (dto == null) return BadRequest();
-
             var flightId = id;
             var command = _mapper.Map<ScheduleFlightCommand>(
                 dto, opt => opt.Items[nameof(ScheduleFlightCommand.Id)] = flightId);
 
             return (await _commandSender.SendAsync(command))
-                .Map(() => Accepted(Link(id)) as IActionResult)
+                .Map(() => Accepted(Url.RouteUrl("find", new {id})) as IActionResult)
                 .Reduce<EntityNotFoundCommandException<ScheduleFlightCommand>>(_ => NotFound())
                 .ReduceOrThrow();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}", Name = "unregister")]
         public async Task<IActionResult> Unregister(Guid id) =>
             (await _commandSender.SendAsync(new UnregisterFlightCommand(id)))
-            .Map(() => Accepted(Link(id)) as IActionResult)
+            .Map(() => Accepted(Url.RouteUrl("find", new {id})) as IActionResult)
             .Reduce<EntityNotFoundCommandException<UnregisterFlightCommand>>(_ => NotFound())
             .ReduceOrThrow();
 
-        private string Link(Guid id) =>
-            Url.Link("get-flight", new {id = id.ToString()});
+        private void AddLinks(FlightProjection dto)
+        {
+            dto.AddLink("self", new LinkDto(Url.RouteUrl("find", new {dto.Id})));
+            dto.AddLink("schedule", new LinkDto(Url.RouteUrl("schedule", new {dto.Id})));
+            dto.AddLink("unregister", new LinkDto(Url.RouteUrl("unregister", new { dto.Id })));
+        }
+
+        private void AddLinks(CollectionDto<FlightProjection> dto, IPagedQueryable<FlightProjection> query)
+        {
+            dto.AddLink("self", new LinkDto(RouteUrl("query", query)));
+
+            if (query.HasPreviousPage())
+            {
+                dto.AddLink("first", new LinkDto(RouteUrl("query", query.FirstPage())));
+                dto.AddLink("prev", new LinkDto(RouteUrl("query", query.PreviousPage())));
+            }
+
+            if (query.HasNextPage(dto.TotalCount))
+            {
+                dto.AddLink("next", new LinkDto(RouteUrl("query", query.NextPage(dto.TotalCount))));
+                dto.AddLink("last", new LinkDto(RouteUrl("query", query.LastPage(dto.TotalCount))));
+            }
+
+            dto.AddLink("find", new LinkDto($"{Url.RouteUrl("query")}/{{id}}") { Templated = true });
+            dto.AddLink("register", new LinkDto(Url.RouteUrl("register")));
+
+            foreach (var value in dto.Values) AddLinks(value);
+        }
+
+        private string RouteUrl<T>(string routeName, IPagedQueryable<T> queryable) =>
+            Url.RouteUrl(routeName, new {limit = queryable.Limit, offset = queryable.Offset});
     }
 }
