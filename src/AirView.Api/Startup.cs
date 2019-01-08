@@ -3,7 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using AirView.Api.Core;
-using AirView.Api.Core.Internal;
+using AirView.Api.Core.ProblemDetails;
+using AirView.Api.Core.ProblemDetails.Internal;
 using AirView.Application;
 using AirView.Application.Core;
 using AirView.Domain;
@@ -50,25 +51,14 @@ namespace AirView.Api
                 options.ContentType = "application/problem+json";
                 options.Map<Exception>().ToStatusCode(HttpStatusCode.InternalServerError).WithBody(exception =>
                 {
-                    object problemDetails = new ProblemDetails
-                    {
-                        Type = "about:blank",
-                        Title = "An unexpected error happened.",
-                        Status = (int?) HttpStatusCode.InternalServerError,
-                        Detail = env.IsDevelopment()
-                            ? exception.Message
-                            : "We are unable to give you more detail about this error. Please try again and contact support if the problem persists.",
-                        Instance = "about:blank"
-                    };
+                    var problemDetails = env.IsDevelopment()
+                        ? new VerboseProblemDetails(exception.Demystify())
+                        : new ProblemDetails {Detail = "We are unable to give you more detail about this error. Please try again and contact support if the problem persists." };
 
-                    if (env.IsDevelopment())
-                        problemDetails = problemDetails.Assign(new
-                        {
-                            StackTrace = exception.Demystify().StackTrace
-                                .Split("\r\n")
-                                .Select(line => line.Trim())
-                                .ToArray()
-                        });
+                    problemDetails.Type = "about:blank";
+                    problemDetails.Title = "An unexpected error happened.";
+                    problemDetails.Status = (int?) HttpStatusCode.InternalServerError;
+                    problemDetails.Instance = "about:blank";
 
                     return problemDetails;
                 });
@@ -182,17 +172,11 @@ namespace AirView.Api
                                     Instance = "about:blank"
                                 }) as IActionResult)
                                 .Reduce(() => new UnprocessableEntityObjectResult(
-                                    new ProblemDetails
+                                    new UnprocessableEntityProblemDetails(context.ModelState)
                                     {
                                         Type = "about:blank",
-                                        Title = "One or more validation errors occurred.",
-                                        Status = (int?) HttpStatusCode.UnprocessableEntity,
-                                        Detail = "See errors for details.",
                                         Instance = "about:blank"
-                                    }.Assign(new
-                                    {
-                                        Errors = new SerializableError(context.ModelState)
-                                    })))));
+                                    }))));
                 });
         }
     }

@@ -4,7 +4,7 @@ using AirView.Shared.Railways;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace AirView.Api.Core.Internal
+namespace AirView.Api.Core.ProblemDetails.Internal
 {
     internal static class ActionContextExtensions
     {
