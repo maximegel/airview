@@ -14,9 +14,9 @@ namespace AirView.Application
         ICommandHandler<ScheduleFlightCommand, Result<CommandException<ScheduleFlightCommand>>>
     {
         private readonly IWritableRepository<Flight> _repository;
-        private readonly IWriteUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ScheduleFlightCommandHandler(IWritableRepository<Flight> repository, IWriteUnitOfWork unitOfWork)
+        public ScheduleFlightCommandHandler(IWritableRepository<Flight> repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
@@ -31,8 +31,7 @@ namespace AirView.Application
                 {
                     flight.Schedule(command.DepartureTime, command.ArrivalTime);
 
-                    await _repository.SaveAsync(cancellationToken);
-                    _unitOfWork.Commit();
+                    await _unitOfWork.CommitAsync(cancellationToken);
 
                     return (Result<CommandException<ScheduleFlightCommand>>) Result.Success;
                 })

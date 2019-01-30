@@ -5,51 +5,66 @@ using System.Threading.Tasks;
 using AirView.Domain.Core;
 using AirView.Shared.Railways;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AirView.Persistence.Core.EntityFramework
 {
     public class EntityFrameworkRepository<TEntity> :
         IQueryableRepository<TEntity>,
-        IWritableRepository<TEntity>
+        IWritableRepository<TEntity>,
+        IUnitOfWorkParticipant
         where TEntity : class, IEntity
     {
-        private readonly DbContext _context;
-        private readonly DbSet<TEntity> _set;
+        private readonly DbContext _dbContext;
+        private readonly DbSet<TEntity> _dbSet;
+        private IDbContextTransaction _transaction;
 
-        public EntityFrameworkRepository(DbContext dbContext)
+        public EntityFrameworkRepository(DbContext dbContext, IUnitOfWorkContext unitOfWorkContext)
         {
-            _context = dbContext;
-            _set = _context.Set<TEntity>();
+            _dbContext = dbContext;
+            _dbSet = _dbContext.Set<TEntity>();
+            unitOfWorkContext.Enlist(this);
+        }
+
+        public void Dispose()
+        {
         }
 
         public IQueryable<TEntity> Query() =>
-            _set.AsNoTracking();
+            _dbSet.AsNoTracking();
 
         Task<Option<TEntity>> IReadableRepository<TEntity>.TryFindAsync(
             object id, CancellationToken cancellationToken) =>
             ExecuteAsNoTracking(() => ((IWritableRepository<TEntity>) this).TryFindAsync(id, cancellationToken));
 
+        public void Commit() => _transaction.Commit();
+
+        public void Prepare() =>
+            _transaction = _dbContext.Database.CurrentTransaction ?? _dbContext.Database.BeginTransaction();
+
+        public void Rollback() => _transaction.Rollback();
+
         public void Add(TEntity entity) =>
-            _set.Add(entity);
+            _dbSet.Add(entity);
 
         public void Attach(TEntity entity) =>
-            _context.Attach(entity).State = EntityState.Modified;
+            _dbContext.Attach(entity).State = EntityState.Modified;
 
         public void Remove(TEntity entity) =>
-            _set.Remove(entity);
+            _dbSet.Remove(entity);
 
         public Task SaveAsync(CancellationToken cancellationToken) =>
-            _context.SaveChangesAsync(cancellationToken);
+            _dbContext.SaveChangesAsync(cancellationToken);
 
         async Task<Option<TEntity>> IWritableRepository<TEntity>.TryFindAsync(
             object id, CancellationToken cancellationToken) =>
-            Option.From(await _set.FindAsync(new object[] {id}, cancellationToken));
+            Option.From(await _dbSet.FindAsync(new[] {id}, cancellationToken));
 
         private TResult ExecuteAsNoTracking<TResult>(Func<TResult> query)
         {
-            _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+            _dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
             var result = query();
-            _context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
+            _dbContext.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.TrackAll;
             return result;
         }
     }

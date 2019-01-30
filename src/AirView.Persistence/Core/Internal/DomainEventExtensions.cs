@@ -15,5 +15,10 @@ namespace AirView.Persistence.Core.Internal
                 default: return aggregate.Do(value => value.ApplyEvent(@event));
             }
         }
+
+        public static string GetName(this IDomainEvent @event) =>
+            @event.Data.GetType().Name
+                .Replace("Aggregate", @event.AggregateType.Name)
+                .Replace("Event", "");
     }
 }

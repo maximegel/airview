@@ -13,9 +13,9 @@ namespace AirView.Application
         ICommandHandler<RegisterFlightCommand, Result<CommandException<RegisterFlightCommand>, Guid>>
     {
         private readonly IWritableRepository<Flight> _repository;        
-        private readonly IWriteUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public RegisterFlightCommandHandler(IWritableRepository<Flight> repository, IWriteUnitOfWork unitOfWork)
+        public RegisterFlightCommandHandler(IWritableRepository<Flight> repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
@@ -27,9 +27,8 @@ namespace AirView.Application
             var newFlight = new Flight(Guid.NewGuid(), command.Number);
 
             _repository.Add(newFlight);
-            await _repository.SaveAsync(cancellationToken);
             // TODO(maximegelinas): Create a 'TransactionCommandHandlerDecorator' so we don't have to commit the transaction in each command handler.
-            _unitOfWork.Commit();
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             return newFlight.Id;
         }

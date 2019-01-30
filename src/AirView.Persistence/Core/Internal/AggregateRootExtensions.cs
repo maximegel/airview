@@ -7,9 +7,6 @@ namespace AirView.Persistence.Core.Internal
 {
     internal static class AggregateRootExtensions
     {
-        public static string GetName(this IAggregateRoot aggregate) =>
-            aggregate.GetType().Name;
-
         public static Task PublishEventsAsync(
             this IAggregateRoot aggregate, IEventPublisher eventPublisher,
             CancellationToken cancellationToken = default) =>

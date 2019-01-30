@@ -13,9 +13,9 @@ namespace AirView.Application
         ICommandHandler<UnregisterFlightCommand, Result<CommandException<UnregisterFlightCommand>>>
     {
         private readonly IWritableRepository<Flight> _repository;
-        private readonly IWriteUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UnregisterFlightCommandHandler(IWritableRepository<Flight> repository, IWriteUnitOfWork unitOfWork)
+        public UnregisterFlightCommandHandler(IWritableRepository<Flight> repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
@@ -29,8 +29,7 @@ namespace AirView.Application
                 .Map(async flight =>
                 {
                     _repository.Remove(flight);
-                    await _repository.SaveAsync(cancellationToken);
-                    _unitOfWork.Commit();
+                    await _unitOfWork.CommitAsync(cancellationToken);
 
                     return (Result<CommandException<UnregisterFlightCommand>>) Result.Success;
                 })

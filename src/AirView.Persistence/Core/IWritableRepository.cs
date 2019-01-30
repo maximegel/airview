@@ -15,8 +15,6 @@ namespace AirView.Persistence.Core
 
         void Remove(TEntity entity);
 
-        Task SaveAsync(CancellationToken cancellationToken = default);
-
         Task<Option<TEntity>> TryFindAsync(object id, CancellationToken cancellationToken = default);
     }
 }

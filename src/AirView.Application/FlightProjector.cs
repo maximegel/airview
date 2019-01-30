@@ -15,9 +15,9 @@ namespace AirView.Application
         IEventHandler<IDomainEvent<Flight, AggregateRemovedEvent>>
     {
         private readonly IWritableRepository<FlightProjection> _repository;
-        private readonly IReadUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public FlightProjector(IWritableRepository<FlightProjection> repository, IReadUnitOfWork unitOfWork)
+        public FlightProjector(IWritableRepository<FlightProjection> repository, IUnitOfWork unitOfWork)
         {
             _repository = repository;
             _unitOfWork = unitOfWork;
@@ -31,8 +31,7 @@ namespace AirView.Application
                 .Do(async flight =>
                 {
                     _repository.Remove(flight);
-                    await _repository.SaveAsync(cancellationToken);
-                    _unitOfWork.Commit();
+                    await _unitOfWork.CommitAsync(cancellationToken);
                 })
                 .Reduce(() => throw new ApplicationException($"Flight projection with identifier '{id}' not found."));
         }
@@ -45,8 +44,7 @@ namespace AirView.Application
                 Number = @event.Data.Number
             });
 
-            await _repository.SaveAsync(cancellationToken);
-            _unitOfWork.Commit();
+            await _unitOfWork.CommitAsync(cancellationToken);
         }
 
         public async Task HandleAsync(
@@ -59,8 +57,7 @@ namespace AirView.Application
                     flight.DepartureTime = @event.Data.DepartureTime;
                     flight.ArrivalTime = @event.Data.DepartureTime;
 
-                    await _repository.SaveAsync(cancellationToken);
-                    _unitOfWork.Commit();
+                    await _unitOfWork.CommitAsync(cancellationToken);
                 })
                 .Reduce(() => throw new ApplicationException($"Flight projection with identifier '{id}' not found."));
         }

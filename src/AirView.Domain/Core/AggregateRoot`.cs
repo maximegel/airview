@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AirView.Domain.Core;
+using AirView.Domain.Core.Internal;
 using AirView.Shared;
 
 namespace AirView.Domain.Core

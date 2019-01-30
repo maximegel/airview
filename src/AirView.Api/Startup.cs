@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -14,6 +14,7 @@ using AirView.Persistence;
 using AirView.Persistence.Core;
 using AirView.Persistence.Core.EntityFramework;
 using AirView.Persistence.Core.EntityFramework.EventSourcing;
+using AirView.Persistence.Core.EventSourcing;
 using AirView.Shared.Railways;
 using AutoMapper;
 using GlobalExceptionHandler.ContentNegotiation.Mvc;
@@ -54,7 +55,11 @@ namespace AirView.Api
                 {
                     var problemDetails = env.IsDevelopment()
                         ? new VerboseProblemDetails(exception.Demystify())
-                        : new ProblemDetails {Detail = "We are unable to give you more detail about this error. Please try again and contact support if the problem persists." };
+                        : new ProblemDetails
+                        {
+                            Detail = "We can not give you more detail about this error. " +
+                                     "Please try again and contact support if the problem persists."
+                        };
 
                     problemDetails.Type = "about:blank";
                     problemDetails.Title = "An unexpected error happened.";
@@ -86,17 +91,22 @@ namespace AirView.Api
                 options.UseSqlServer(Configuration.GetConnectionString("Read")));
             services.AddDbContext<WriteDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("Write")));
-            services.AddScoped<IReadUnitOfWork>(provider =>
-                new EntityFrameworkUnitOfWork(provider.GetRequiredService<ReadDbContext>()));
-            services.AddScoped<IWriteUnitOfWork>(provider =>
-                new EntityFrameworkUnitOfWork(provider.GetRequiredService<WriteDbContext>()));
+            services.AddScoped<UnitOfWork>();
+            services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<UnitOfWork>());
+            services.AddScoped<IUnitOfWorkContext>(provider => provider.GetRequiredService<UnitOfWork>());
+            services.AddScoped(provider =>
+                new EntityFrameworkRepository<FlightProjection>(
+                    provider.GetRequiredService<ReadDbContext>(),
+                    provider.GetRequiredService<IUnitOfWorkContext>()));
             services.AddScoped<IQueryableRepository<FlightProjection>>(provider =>
-                new EntityFrameworkRepository<FlightProjection>(provider.GetRequiredService<ReadDbContext>()));
+                provider.GetRequiredService<EntityFrameworkRepository<FlightProjection>>());
             services.AddScoped<IWritableRepository<FlightProjection>>(provider =>
-                new EntityFrameworkRepository<FlightProjection>(provider.GetRequiredService<ReadDbContext>()));
+                provider.GetRequiredService<EntityFrameworkRepository<FlightProjection>>());
             services.AddScoped<IWritableRepository<Flight>>(provider =>
-                new EntityFrameworkEventSourcedRepository<Flight>(
-                    provider.GetRequiredService<WriteDbContext>(), provider.GetRequiredService<IEventPublisher>()));
+                new EventSourcedRepository<Flight>(
+                    new EntityFrameworkEventLog<Flight>(provider.GetRequiredService<WriteDbContext>()),
+                    provider.GetRequiredService<IEventPublisher>(),
+                    provider.GetRequiredService<IUnitOfWorkContext>()));
             // == Application ==
             // TODO(maximegelinas): Scan assemblies to register every command handlers and every event handlers at once.
             services.AddTransient<
