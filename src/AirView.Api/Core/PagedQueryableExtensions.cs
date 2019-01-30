@@ -22,7 +22,7 @@ namespace AirView.Api.Core
 
         public static IPagedQueryable<T> LastPage<T>(this IPagedQueryable<T> queryable, int totalCount) =>
             new PagedQueryable<T>(queryable, queryable.Limit,
-                (int) Math.Ceiling(totalCount / (double) queryable.Limit));
+                ((int) Math.Ceiling(totalCount / (double) queryable.Limit) - 1) * queryable.Limit);
 
         public static async Task<IPagedQueryable<T>> LastPageAsync<T>(
             this IPagedQueryable<T> queryable, CancellationToken cancellationToken = default) =>
