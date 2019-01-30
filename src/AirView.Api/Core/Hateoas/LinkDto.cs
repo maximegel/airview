@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace AirView.Api.Core
+namespace AirView.Api.Core.Hateoas
 {
     /// <summary>
     ///     Represents a hyperlink from the containing resource to a URI.

@@ -6,7 +6,7 @@ using Humanizer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace AirView.Api.Core
+namespace AirView.Api.Core.Hateoas
 {
     public class LinkedDtoJsonConverter : JsonConverter<LinkedDto>
     {

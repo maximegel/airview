@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
-namespace AirView.Api.Core
+namespace AirView.Api.Core.Hateoas
 {
     public class HalOutputFormatter : TextOutputFormatter
     {

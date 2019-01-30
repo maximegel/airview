@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using AirView.Shared.Railways;
 
-namespace AirView.Api.Core
+namespace AirView.Api.Core.Hateoas
 {
     public static class DtoExtensions
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AirView.Api.Core;
+using AirView.Api.Core.Hateoas;
 using AirView.Application;
 using AirView.Application.Core;
 using AirView.Application.Core.Exceptions;

@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using AirView.Api.Core;
+using AirView.Api.Core.Hateoas;
 using AirView.Api.Core.ProblemDetails;
 using AirView.Api.Core.ProblemDetails.Internal;
 using AirView.Application;

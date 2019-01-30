@@ -2,7 +2,7 @@
 using AirView.Shared.Railways;
 using Newtonsoft.Json;
 
-namespace AirView.Api.Core
+namespace AirView.Api.Core.Hateoas
 {
     /// <summary>
     ///     Represents a HAL resource. <see href="https://tools.ietf.org/html/draft-kelly-json-hal-08#section-4" />
