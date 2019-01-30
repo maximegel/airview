@@ -12,9 +12,9 @@ namespace AirView.Application.Core
         private IDictionary<Type, ICollection<Delegate>> Handlers { get; } =
             new Dictionary<Type, ICollection<Delegate>>();
 
-        public InMemoryBusBuilder AddCommandHandler<TCommand, TResult>(ICommandHandler<TCommand, TResult> handler)
+        public InMemoryBusBuilder AddCommandHandler<TCommand, TResult>(Func<ICommandHandler<TCommand, TResult>> handlerFactory)
             where TCommand : ICommand<TResult> =>
-            AddCommandHandler<TCommand, TResult>(handler.HandleAsync);
+            AddCommandHandler<TCommand, TResult>(handlerFactory().HandleAsync);
 
         public InMemoryBusBuilder AddCommandHandler<TCommand, TResult>(
             Func<TCommand, CancellationToken, Task<TResult>> handler)
@@ -28,9 +28,9 @@ namespace AirView.Application.Core
             return this;
         }
 
-        public InMemoryBusBuilder AddEventHandler<TEvent>(IEventHandler<TEvent> handler)
+        public InMemoryBusBuilder AddEventHandler<TEvent>(Func<IEventHandler<TEvent>> handlerFactory)
             where TEvent : IDomainEvent =>
-            AddEventHandler<TEvent>(handler.HandleAsync);
+            AddEventHandler<TEvent>(handlerFactory().HandleAsync);
 
         public InMemoryBusBuilder AddEventHandler<TEvent>(Func<TEvent, CancellationToken, Task> handler)
             where TEvent : IDomainEvent

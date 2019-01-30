@@ -108,26 +108,26 @@ namespace AirView.Api
             services.AddTransient<
                 ICommandHandler<UnregisterFlightCommand, Result<CommandException<UnregisterFlightCommand>>>,
                 UnregisterFlightCommandHandler>();
-            services.AddScoped<ICommandSender, InMemoryBus>(provider =>
+            services.AddSingleton<ICommandSender, InMemoryBus>(provider =>
                 new InMemoryBusBuilder()
-                    .AddCommandHandler(provider.GetRequiredService<ICommandHandler<
-                        RegisterFlightCommand, Result<CommandException<RegisterFlightCommand>, Guid>>>())
-                    .AddCommandHandler(provider.GetRequiredService<ICommandHandler<
-                        ScheduleFlightCommand, Result<CommandException<ScheduleFlightCommand>>>>())
-                    .AddCommandHandler(provider.GetRequiredService<ICommandHandler<
-                        UnregisterFlightCommand, Result<CommandException<UnregisterFlightCommand>>>>())
+                    .AddCommandHandler(() => provider.CreateScope().ServiceProvider.GetRequiredService<
+                        ICommandHandler<RegisterFlightCommand, Result<CommandException<RegisterFlightCommand>, Guid>>>())
+                    .AddCommandHandler(() => provider.CreateScope().ServiceProvider.GetRequiredService<
+                        ICommandHandler<ScheduleFlightCommand, Result<CommandException<ScheduleFlightCommand>>>>())
+                    .AddCommandHandler(() => provider.CreateScope().ServiceProvider.GetRequiredService<
+                        ICommandHandler<UnregisterFlightCommand, Result<CommandException<UnregisterFlightCommand>>>>())
                     .Build());
             services.AddTransient<IEventHandler<IDomainEvent<Flight, FlightRegistratedEvent>>, FlightProjector>();
             services.AddTransient<IEventHandler<IDomainEvent<Flight, FlightScheduledEvent>>, FlightProjector>();
             services.AddTransient<IEventHandler<IDomainEvent<Flight, AggregateRemovedEvent>>, FlightProjector>();
-            services.AddScoped<IEventPublisher, InMemoryBus>(provider =>
+            services.AddSingleton<IEventPublisher, InMemoryBus>(provider =>
                 new InMemoryBusBuilder()
-                    .AddEventHandler(provider.GetRequiredService<IEventHandler<
-                        IDomainEvent<Flight, FlightRegistratedEvent>>>())
-                    .AddEventHandler(provider.GetRequiredService<IEventHandler<
-                        IDomainEvent<Flight, FlightScheduledEvent>>>())
-                    .AddEventHandler(provider.GetRequiredService<IEventHandler<
-                        IDomainEvent<Flight, AggregateRemovedEvent>>>())
+                    .AddEventHandler(() => provider.CreateScope().ServiceProvider.GetRequiredService<
+                        IEventHandler<IDomainEvent<Flight, FlightRegistratedEvent>>>())
+                    .AddEventHandler(() => provider.CreateScope().ServiceProvider.GetRequiredService<
+                        IEventHandler<IDomainEvent<Flight, FlightScheduledEvent>>>())
+                    .AddEventHandler(() => provider.CreateScope().ServiceProvider.GetRequiredService<
+                        IEventHandler<IDomainEvent<Flight, AggregateRemovedEvent>>>())
                     .Build());
             // == Api ==
             services.AddAutoMapper();
