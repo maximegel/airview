@@ -44,6 +44,9 @@ namespace AirView.Persistence.Core.EntityFramework
 
         public void Rollback() => _transaction.Rollback();
 
+        public Task SaveAsync(CancellationToken cancellationToken) =>
+            _dbContext.SaveChangesAsync(cancellationToken);
+
         public void Add(TEntity entity) =>
             _dbSet.Add(entity);
 
@@ -52,9 +55,6 @@ namespace AirView.Persistence.Core.EntityFramework
 
         public void Remove(TEntity entity) =>
             _dbSet.Remove(entity);
-
-        public Task SaveAsync(CancellationToken cancellationToken) =>
-            _dbContext.SaveChangesAsync(cancellationToken);
 
         async Task<Option<TEntity>> IWritableRepository<TEntity>.TryFindAsync(
             object id, CancellationToken cancellationToken) =>

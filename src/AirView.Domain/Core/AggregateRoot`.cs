@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using AirView.Domain.Core;
 using AirView.Domain.Core.Internal;
 using AirView.Shared;
 
@@ -25,7 +24,7 @@ namespace AirView.Domain.Core
         private readonly ICollection<IDomainEvent> _uncommitedEvents = new List<IDomainEvent>();
 
         protected AggregateRoot(TId id) :
-            base(id) => 
+            base(id) =>
             _router = new AggregateEventRouter(this);
 
         protected long Version { get; set; }

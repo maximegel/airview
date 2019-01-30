@@ -21,7 +21,9 @@ namespace AirView.Api.Core.Internal
             Offset = offset;
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)Page).GetEnumerator();
+        private IQueryable<T> Page => _queryable.Skip(Offset).Take(Limit);
+
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable) Page).GetEnumerator();
 
         public IEnumerator<T> GetEnumerator() => Page.GetEnumerator();
 
@@ -39,7 +41,5 @@ namespace AirView.Api.Core.Internal
         public Expression Expression => Page.Expression;
 
         public IQueryProvider Provider => Page.Provider;
-
-        private IQueryable<T> Page => _queryable.Skip(Offset).Take(Limit);
     }
 }

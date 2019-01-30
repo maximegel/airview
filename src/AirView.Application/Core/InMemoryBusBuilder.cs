@@ -12,7 +12,8 @@ namespace AirView.Application.Core
         private IDictionary<Type, ICollection<Delegate>> Handlers { get; } =
             new Dictionary<Type, ICollection<Delegate>>();
 
-        public InMemoryBusBuilder AddCommandHandler<TCommand, TResult>(Func<ICommandHandler<TCommand, TResult>> handlerFactory)
+        public InMemoryBusBuilder AddCommandHandler<TCommand, TResult>(
+            Func<ICommandHandler<TCommand, TResult>> handlerFactory)
             where TCommand : ICommand<TResult> =>
             AddCommandHandler<TCommand, TResult>(handlerFactory().HandleAsync);
 

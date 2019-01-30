@@ -2,7 +2,7 @@
 {
     public class Right<TLeft, TRight> : Either<TLeft, TRight>
     {
-        public Right(TRight content) => 
+        public Right(TRight content) =>
             Content = content;
 
         private TRight Content { get; }

@@ -7,7 +7,7 @@ namespace AirView.Domain.Core
         public static IDomainEvent Of<TAggregate>(
             object aggregateId, long aggregateVersion, Type dataType, object data)
             where TAggregate : IAggregateRoot =>
-            (IDomainEvent<TAggregate>)Activator.CreateInstance(
+            (IDomainEvent<TAggregate>) Activator.CreateInstance(
                 typeof(DomainEvent<,>).MakeGenericType(typeof(TAggregate), dataType),
                 aggregateId, aggregateVersion, data);
 
@@ -25,7 +25,7 @@ namespace AirView.Domain.Core
         public static IDomainEvent Of<TAggregateEvent>(
             Type aggregateType, object aggregateId, long aggregateVersion, TAggregateEvent data)
             where TAggregateEvent : IAggregateEvent =>
-            (IDomainEvent)Activator.CreateInstance(
+            (IDomainEvent) Activator.CreateInstance(
                 typeof(DomainEvent<,>).MakeGenericType(aggregateType, typeof(TAggregateEvent)),
                 aggregateId, aggregateVersion, data);
     }

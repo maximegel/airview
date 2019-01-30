@@ -8,7 +8,7 @@ namespace AirView.Shared.Railways
     public static class OptionAdapters
     {
         public static IEnumerable<T> Flatten<T>(this IEnumerable<Option<T>> sequence) =>
-            sequence.OfType<Some<T>>().Select(some => (T)some);
+            sequence.OfType<Some<T>>().Select(some => (T) some);
 
         public static IEnumerable<TResult> Flatten<T, TResult>(
             this IEnumerable<T> sequence, Func<T, Option<TResult>> mapper) =>

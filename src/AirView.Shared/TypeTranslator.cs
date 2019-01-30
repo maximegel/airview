@@ -35,8 +35,8 @@ namespace AirView.Shared
                 return $"{GetFriendlyName(type.GetElementType(), translations)}[]";
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 return $"{type.GetGenericArguments()[0].GetFriendlyName()}?";
-            return type.IsGenericType 
-                ? $"{type.Name.Split('`')[0]}<{string.Join(", ", type.GetGenericArguments().Select(GetFriendlyName).ToArray())}>" 
+            return type.IsGenericType
+                ? $"{type.Name.Split('`')[0]}<{string.Join(", ", type.GetGenericArguments().Select(GetFriendlyName).ToArray())}>"
                 : type.Name;
         }
 

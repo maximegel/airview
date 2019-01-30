@@ -24,7 +24,7 @@ namespace AirView.Persistence.Core.EventSourcing
         private readonly IDictionary<object, TAggregate> _trakedAggregates = new Dictionary<object, TAggregate>();
 
         public EventSourcedRepository(
-            IEventLog<IDomainEvent> eventLog, 
+            IEventLog<IDomainEvent> eventLog,
             IEventPublisher eventPublisher,
             IUnitOfWorkContext unitOfWorkContext)
         {

@@ -76,7 +76,7 @@ namespace AirView.Api.Flights
         {
             dto.AddLink("self", new LinkDto(Url.RouteUrl("find", new {dto.Id})));
             dto.AddLink("schedule", new LinkDto(Url.RouteUrl("schedule", new {dto.Id})));
-            dto.AddLink("unregister", new LinkDto(Url.RouteUrl("unregister", new { dto.Id })));
+            dto.AddLink("unregister", new LinkDto(Url.RouteUrl("unregister", new {dto.Id})));
         }
 
         private void AddLinks(CollectionDto<FlightProjection> dto, IPagedQueryable<FlightProjection> query)
@@ -95,7 +95,7 @@ namespace AirView.Api.Flights
                 dto.AddLink("last", new LinkDto(RouteUrl("query", query.LastPage(dto.TotalCount))));
             }
 
-            dto.AddLink("find", new LinkDto($"{Url.RouteUrl("query")}/{{id}}") { Templated = true });
+            dto.AddLink("find", new LinkDto($"{Url.RouteUrl("query")}/{{id}}") {Templated = true});
             dto.AddLink("register", new LinkDto(Url.RouteUrl("register")));
 
             foreach (var value in dto.Values) AddLinks(value);

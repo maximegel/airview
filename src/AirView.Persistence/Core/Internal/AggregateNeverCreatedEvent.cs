@@ -2,7 +2,7 @@
 
 namespace AirView.Persistence.Core.Internal
 {
-    public class AggregateNeverCreatedEvent : 
+    public class AggregateNeverCreatedEvent :
         IAggregateEvent
     {
     }

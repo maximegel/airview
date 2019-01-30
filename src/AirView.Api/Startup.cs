@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using AirView.Api.Core;
 using AirView.Api.Core.Hateoas;
 using AirView.Api.Core.ProblemDetails;
 using AirView.Api.Core.ProblemDetails.Internal;
@@ -121,7 +120,8 @@ namespace AirView.Api
             services.AddSingleton<ICommandSender, InMemoryBus>(provider =>
                 new InMemoryBusBuilder()
                     .AddCommandHandler(() => provider.CreateScope().ServiceProvider.GetRequiredService<
-                        ICommandHandler<RegisterFlightCommand, Result<CommandException<RegisterFlightCommand>, Guid>>>())
+                        ICommandHandler<RegisterFlightCommand, Result<CommandException<RegisterFlightCommand>, Guid>>
+                    >())
                     .AddCommandHandler(() => provider.CreateScope().ServiceProvider.GetRequiredService<
                         ICommandHandler<ScheduleFlightCommand, Result<CommandException<ScheduleFlightCommand>>>>())
                     .AddCommandHandler(() => provider.CreateScope().ServiceProvider.GetRequiredService<

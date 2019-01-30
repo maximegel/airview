@@ -2,7 +2,7 @@
 
 namespace AirView.Domain
 {
-    public class FlightRegistratedEvent : 
+    public class FlightRegistratedEvent :
         IAggregateEvent
     {
         public FlightRegistratedEvent(string number) =>

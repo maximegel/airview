@@ -5,7 +5,7 @@ namespace AirView.Domain.Core
     public class DomainEvent<TAggregate, TAggregateEvent> :
         IDomainEvent<TAggregate, TAggregateEvent>
         where TAggregate : IAggregateRoot
-        where TAggregateEvent : IAggregateEvent 
+        where TAggregateEvent : IAggregateEvent
     {
         public DomainEvent(object aggregateId, long aggregateVersion, TAggregateEvent data)
         {

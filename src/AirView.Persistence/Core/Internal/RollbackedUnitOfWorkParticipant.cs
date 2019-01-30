@@ -21,7 +21,7 @@ namespace AirView.Persistence.Core.Internal
 
         public IUnitOfWorkParticipantState Rollback(Action rollbacker) => this;
 
-        public Task<IUnitOfWorkParticipantState> SaveAsync(Func<Task> saver) => 
+        public Task<IUnitOfWorkParticipantState> SaveAsync(Func<Task> saver) =>
             Task.FromResult(this as IUnitOfWorkParticipantState);
     }
 }

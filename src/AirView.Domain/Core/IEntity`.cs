@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AirView.Domain.Core
+﻿namespace AirView.Domain.Core
 {
     /// <inheritdoc />
     /// <summary>
