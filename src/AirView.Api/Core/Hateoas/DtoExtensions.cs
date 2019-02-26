@@ -15,7 +15,6 @@ namespace AirView.Api.Core.Hateoas
         public static void AddLink(this object dto, string rel, LinkDto link) =>
             Links.GetOrCreateValue(dto).Add(rel, link);
 
-        // TODO(maximegelinas): Simplify.
         public static LinkedDto ToLinkedDto(this object dto)
         {
             var embeddedDtos = dto.GetType()
@@ -49,6 +48,6 @@ namespace AirView.Api.Core.Hateoas
             Links.AsEnumerable().Any(pair => dtoType.IsInstanceOfType(pair.Key));
 
         internal static bool HasLinks(this object dto) =>
-            Links.TryGetValue(dto, out _);
+            dto != null && Links.TryGetValue(dto, out _);
     }
 }

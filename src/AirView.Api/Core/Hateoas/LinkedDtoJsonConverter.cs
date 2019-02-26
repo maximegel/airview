@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AirView.Shared.Railways;
-using Humanizer;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -32,34 +31,40 @@ namespace AirView.Api.Core.Hateoas
 
         private static JObject WriteJsonObject(LinkedDto value, JsonSerializer serializer)
         {
-            var obj = new JObject();
+            var linksToken =
+                value.Links
+                    .When(links => links.Any())
+                    .Map(links => links.ToDictionary(
+                        pair => pair.Key,
+                        pair => pair.Value.Map(linkList => linkList as object).Reduce(singleLink => singleLink)))
+                    .Map(dict => JObject.FromObject(dict, serializer));
 
-            if (value.Links.Any())
-                obj.Add("_links", JObject.FromObject(
-                    value.Links.ToDictionary(
-                        // TODO(maximegelinas): Find a better way.
-                        pair => pair.Key.Camelize(),
+            var embeddedToken =
+                value.Embedded
+                    .When(embedded => embedded.Any())
+                    .Map(embedded => embedded.ToDictionary(
+                        pair => pair.Key,
                         pair => pair.Value
-                            .Map(links => JArray.FromObject(links, serializer) as JToken)
-                            .Reduce(link => JObject.FromObject(link, serializer)))));
+                            .Map(linkedDtos => WriteJsonArray(linkedDtos, serializer) as JToken)
+                            .Reduce(linkedDto => WriteJsonObject(linkedDto, serializer))))
+                    .Map(dict => JObject.FromObject(dict, serializer));
 
-            foreach (var property in JObject.FromObject(value.State, serializer).Properties()) obj.Add(property);
+            var embeddedProperties = embeddedToken
+                .Map(token => token.Properties())
+                .Reduce(Enumerable.Empty<JProperty>())
+                .Select(prop => prop.Name);
 
-            if (!value.Embedded.Any())
-                return obj;
+            var properties = JObject
+                .FromObject(
+                    new {Links = linksToken.Reduce(() => null), Embedded = embeddedToken.Reduce(() => null)},
+                    serializer)
+                .Properties()
+                .Select(prop => new JProperty($"_{prop.Name}", prop.Value))
+                .Concat(JObject.FromObject(value.State, serializer)
+                    .Properties()
+                    .Where(prop => !embeddedProperties.Contains(prop.Name)));
 
-            var embeddedObj = JObject.FromObject(
-                value.Embedded.ToDictionary(
-                    // TODO(maximegelinas): Find a better way.
-                    pair => pair.Key.Camelize(),
-                    pair => pair.Value
-                        .Map(linkedDtos => WriteJsonArray(linkedDtos, serializer) as JToken)
-                        .Reduce(linkedDto => WriteJsonObject(linkedDto, serializer))));
-            obj.Add("_embedded", embeddedObj);
-
-            foreach (var property in embeddedObj.Properties()) obj.Remove(property.Name);
-
-            return obj;
+            return new JObject(properties);
         }
     }
 }
