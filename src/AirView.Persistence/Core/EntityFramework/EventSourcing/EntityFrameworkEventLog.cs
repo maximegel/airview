@@ -23,8 +23,8 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
     {
         private readonly EventSourcedDbContext _dbContext;
 
-        private readonly IDictionary<object, IEventStream<IDomainEvent>> _trackedStreams =
-            new Dictionary<object, IEventStream<IDomainEvent>>();
+        private readonly IDictionary<object, EventStream<IDomainEvent>> _trackedStreams =
+            new Dictionary<object, EventStream<IDomainEvent>>();
 
         private IDbContextTransaction _transaction;
 
@@ -35,17 +35,17 @@ namespace AirView.Persistence.Core.EntityFramework.EventSourcing
         {
         }
 
-        public IEventStream<IDomainEvent> GetStream(object id) =>
+        public IEventStream<IDomainEvent> Stream(object id) =>
             _trackedStreams.TryGetValue(id)
                 // TODO(maximegelinas): Make slice size (i.e. 200) configurable.
                 .Reduce(() => _trackedStreams[id] = new EventStream<IDomainEvent>(id, this, 200));
 
         async Task<IEnumerable<IDomainEvent>> IEventReader<IDomainEvent>.ReadAsync(
-            object streamId, int limit, long offset, CancellationToken cancellationToken) =>
+            object streamId, long startIndex, int limit, CancellationToken cancellationToken) =>
             (await _dbContext.Events.AsNoTracking()
                 .Where(@event =>
                     @event.StreamId == streamId.ToString() &&
-                    offset <= @event.StreamVersion && @event.StreamVersion <= offset + limit)
+                    startIndex <= @event.StreamVersion && @event.StreamVersion <= startIndex + limit)
                 .OrderBy(@event => @event.StreamVersion)
                 .ToListAsync(cancellationToken))
             .Select(@event =>

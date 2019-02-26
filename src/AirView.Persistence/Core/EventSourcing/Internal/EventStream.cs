@@ -16,16 +16,21 @@ namespace AirView.Persistence.Core.EventSourcing.Internal
             _sliceSize = sliceSize;
         }
 
-        public IAsyncEnumerator<TEvent> GetEnumerator() =>
-            new PagingAsyncEnumerator<TEvent>(
-                (limit, offset, cancellationToken) => _reader.ReadAsync(Id, limit, offset, cancellationToken),
-                _sliceSize);
+        public object Id { get; }
+
+        public IEnumerable<TEvent> UncommitedEvents => _uncommitedEvents;
+
+        public IAsyncEnumerator<TEvent> GetEnumerator() => GetEnumeratorAt(0);
 
         public void Append(TEvent @event) =>
             _uncommitedEvents.Add(@event);
 
-        public object Id { get; }
+        public IAsyncEnumerable<TEvent> From(long index) =>
+            new AsyncEnumerable<TEvent>(() => GetEnumeratorAt(index));
 
-        public IEnumerable<TEvent> UncommitedEvents => _uncommitedEvents;
-    }    
+        private IAsyncEnumerator<TEvent> GetEnumeratorAt(long index) =>
+            new PagingAsyncEnumerator<TEvent>(
+                (limit, offset, cancellationToken) => _reader.ReadAsync(Id, offset, limit, cancellationToken),
+                _sliceSize, index);
+    }
 }

@@ -3,6 +3,6 @@
     public interface IEventLog<TEvent> :
         IUnitOfWorkParticipant
     {
-        IEventStream<TEvent> GetStream(object id);
+        IEventStream<TEvent> Stream(object id);
     }
 }

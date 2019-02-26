@@ -15,9 +15,10 @@ namespace AirView.Persistence.Core.EventSourcing
         where TAggregate : IAggregateRoot
     {
         private readonly IEventLog<IDomainEvent> _eventLog;
+        // TODO(maximegelinas): Move out event publishing responsability from event sourced repository.
         private readonly IEventPublisher _eventPublisher;
 
-        // TODO(maximegelinas): Make configurable.
+        // TODO(maximegelinas): Make stream ID naming convention configurable.
         private readonly Func<Type, object, string> _streamIdNamingConvention =
             (_, aggregateId) => aggregateId.ToString();
 
@@ -54,7 +55,7 @@ namespace AirView.Persistence.Core.EventSourcing
         public async Task SaveAsync(CancellationToken cancellationToken)
         {
             foreach (var aggregate in _trakedAggregates.Values)
-                _eventLog.GetStream(_streamIdNamingConvention(aggregate.GetType(), aggregate.Id))
+                _eventLog.Stream(StreamId(aggregate.Id))
                     .AppendRange(aggregate.UncommittedEvents);
 
             await _eventLog.SaveAsync(cancellationToken);
@@ -75,10 +76,12 @@ namespace AirView.Persistence.Core.EventSourcing
         }
 
         public async Task<Option<TAggregate>> TryFindAsync(object id, CancellationToken cancellationToken) =>
-            (await _eventLog.GetStream(_streamIdNamingConvention(typeof(TAggregate), id))
+            (await _eventLog.Stream(StreamId(id))
                 .DefaultIfEmpty(DomainEvent.Of<TAggregate>(id, 0, new AggregateNeverCreatedEvent()))
                 .Aggregate(Option.Some(AggregateRoot.New<TAggregate>(id)),
                     (aggregate, @event) => @event.ApplyTo(aggregate), cancellationToken))
             .Do(Attach);
+
+        private object StreamId(object aggregateId) => _streamIdNamingConvention(typeof(TAggregate), aggregateId);
     }
 }

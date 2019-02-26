@@ -7,6 +7,6 @@ namespace AirView.Persistence.Core.EventSourcing
     public interface IEventReader<TEvent>
     {
         Task<IEnumerable<TEvent>> ReadAsync(
-            object streamId, int limit, long offset = 0, CancellationToken cancellationToken = default);
+            object streamId, long startIndex, int limit, CancellationToken cancellationToken = default);
     }
 }

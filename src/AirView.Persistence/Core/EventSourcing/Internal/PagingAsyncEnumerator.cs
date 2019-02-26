@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AirView.Persistence.Core.EventSourcing.Internal
 {
-    public class PagingAsyncEnumerator<T> :
+    internal class PagingAsyncEnumerator<T> :
         IAsyncEnumerator<T>
     {
         private static readonly Func<int, long, CancellationToken, Task<IEnumerable<T>>> NoopReader =
@@ -17,10 +17,11 @@ namespace AirView.Persistence.Core.EventSourcing.Internal
         private long _offset;
         private Func<int, long, CancellationToken, Task<IEnumerable<T>>> _reader;
 
-        public PagingAsyncEnumerator(Func<int, long, CancellationToken, Task<IEnumerable<T>>> reader, int limit)
+        public PagingAsyncEnumerator(Func<int, long, CancellationToken, Task<IEnumerable<T>>> reader, int limit, long offset = 0)
         {
             _reader = reader;
             _limit = limit;
+            _offset = offset;
         }
 
         public T Current { get; private set; }

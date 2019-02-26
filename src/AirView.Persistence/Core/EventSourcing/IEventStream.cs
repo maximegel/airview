@@ -5,10 +5,8 @@ namespace AirView.Persistence.Core.EventSourcing
     public interface IEventStream<TEvent> :
         IAsyncEnumerable<TEvent>
     {
-        object Id { get; }
-
-        IEnumerable<TEvent> UncommitedEvents { get; }
-
         void Append(TEvent @event);
+
+        IAsyncEnumerable<TEvent> From(long index);
     }
 }
