@@ -18,10 +18,10 @@ namespace AirView.Domain
         public void Schedule(DateTime departureTime, DateTime arrivalTime) =>
             Raise(new FlightScheduledEvent(departureTime, arrivalTime));
 
-        protected void Apply(FlightRegistratedEvent @event) =>
+        private void Apply(FlightRegistratedEvent @event) =>
             Number = @event.Number;
 
-        protected void Apply(FlightScheduledEvent @event)
+        private void Apply(FlightScheduledEvent @event)
         {
             DepartureTime = @event.DepartureTime;
             ArrivalTime = @event.ArrivalTime;

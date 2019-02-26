@@ -21,10 +21,8 @@ namespace AirView.Application
         }
 
         public async Task<Result<CommandException<UnregisterFlightCommand>>> HandleAsync(
-            UnregisterFlightCommand command, CancellationToken cancellationToken)
-        {
-            var commandId = command.Id;
-            return await (await _repository.TryFindAsync(command.Id, cancellationToken))
+            UnregisterFlightCommand command, CancellationToken cancellationToken) =>
+            await (await _repository.TryFindAsync(command.Id, cancellationToken))
                 .Map(async flight =>
                 {
                     _repository.Remove(flight);
@@ -32,7 +30,6 @@ namespace AirView.Application
 
                     return (Result<CommandException<UnregisterFlightCommand>>) Result.Success;
                 })
-                .ReduceAsync(() => new EntityNotFoundCommandException<UnregisterFlightCommand>(commandId.ToString()));
-        }
+                .ReduceAsync(() => new EntityNotFoundCommandException<UnregisterFlightCommand>(command.Id.ToString()));
     }
 }
