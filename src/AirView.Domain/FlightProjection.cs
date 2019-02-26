@@ -3,17 +3,31 @@ using AirView.Domain.Core;
 
 namespace AirView.Domain
 {
-    public class FlightProjection : Entity<Guid>
+    public class FlightProjection : Projection<Guid>
     {
         public FlightProjection(Guid id) :
             base(id)
         {
         }
 
-        public DateTime ArrivalTime { get; set; }
+        private FlightProjection() :
+            base(Guid.Empty)
+        {
+        }
 
-        public DateTime DepartureTime { get; set; }
+        public DateTime ArrivalTime { get; private set; }
 
-        public string Number { get; set; }
+        public DateTime DepartureTime { get; private set; }
+
+        public string Number { get; private set; }
+
+        private void Apply(IDomainEvent<Flight, FlightRegistratedEvent> @event) =>
+            Number = @event.Data.Number;
+
+        private void Apply(IDomainEvent<Flight, FlightScheduledEvent> @event)
+        {
+            DepartureTime = @event.Data.DepartureTime;
+            ArrivalTime = @event.Data.DepartureTime;
+        }
     }
 }

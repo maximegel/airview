@@ -20,16 +20,16 @@ namespace AirView.Domain.Core
     public abstract class AggregateRoot<TId> : Entity<TId>,
         IAggregateRoot<TId>
     {
-        private readonly AggregateEventRouter _router;
+        private readonly IEventRouter<IAggregateEvent> _router;
         private readonly ICollection<IDomainEvent> _uncommitedEvents = new List<IDomainEvent>();
 
         protected AggregateRoot(TId id) :
             base(id) =>
-            _router = new AggregateEventRouter(this);
+            _router = new MethodsEventRouter<IAggregateEvent>(this, "^Apply$");
 
         protected long Version { get; set; }
 
-        void IAggregateRoot.ApplyEvent(IDomainEvent @event)
+        void IProjection.ApplyEvent(IDomainEvent @event)
         {
             if (@event.AggregateVersion != Version + 1)
                 throw new ArgumentException(

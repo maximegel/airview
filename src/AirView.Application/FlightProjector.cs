@@ -1,10 +1,13 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AirView.Application.Core;
 using AirView.Domain;
 using AirView.Domain.Core;
 using AirView.Persistence.Core;
+using AirView.Persistence.Core.EventSourcing;
 using AirView.Shared.Railways;
 
 namespace AirView.Application
@@ -28,9 +31,9 @@ namespace AirView.Application
         {
             var id = @event.AggregateId;
             (await _repository.TryFindAsync(id, cancellationToken))
-                .Do(async flight =>
+                .Do(async projection =>
                 {
-                    _repository.Remove(flight);
+                    _repository.Remove(projection);
                     await _unitOfWork.CommitAsync(cancellationToken);
                 })
                 .Reduce(() => throw new ApplicationException($"Flight projection with identifier '{id}' not found."));
@@ -39,11 +42,10 @@ namespace AirView.Application
         public async Task HandleAsync(
             IDomainEvent<Flight, FlightRegistratedEvent> @event, CancellationToken cancellationToken)
         {
-            _repository.Add(new FlightProjection((Guid) @event.AggregateId)
-            {
-                Number = @event.Data.Number
-            });
+            var projection = new FlightProjection((Guid) @event.AggregateId);
+            projection.ApplyEvent(@event);
 
+            _repository.Add(projection);
             await _unitOfWork.CommitAsync(cancellationToken);
         }
 
@@ -52,14 +54,14 @@ namespace AirView.Application
         {
             var id = @event.AggregateId;
             (await _repository.TryFindAsync(id, cancellationToken))
-                .Do(async flight =>
+                .Do(async projection =>
                 {
-                    flight.DepartureTime = @event.Data.DepartureTime;
-                    flight.ArrivalTime = @event.Data.DepartureTime;
+                    projection.ApplyEvent(@event);
 
                     await _unitOfWork.CommitAsync(cancellationToken);
                 })
-                .Reduce(() => throw new ApplicationException($"Flight projection with identifier '{id}' not found."));
+                .Reduce(() =>
+                    throw new ApplicationException($"Flight projection with identifier '{id}' not found."));
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace AirView.Domain.Core
+﻿using AirView.Domain.Core.Internal;
+
+namespace AirView.Domain.Core
 {
     /// <inheritdoc cref="IEntity{TId}" />
     /// <summary>
@@ -14,11 +16,7 @@
     /// <typeparam name="TId"></typeparam>
     public interface IAggregateRoot<out TId> :
         IAggregateRoot,
-        IEntity<TId>
+        IProjection<TId>
     {
-        /// <summary>
-        ///     Identifier that make the aggreggate root unique.
-        /// </summary>
-        new TId Id { get; }
     }
 }

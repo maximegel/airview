@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AirView.Domain.Core.Internal;
 
 namespace AirView.Domain.Core
 {
@@ -14,13 +15,11 @@ namespace AirView.Domain.Core
     ///     The root is the only member of the aggregate that outside objects are allowed to hold or references to.
     /// </remarks>
     public interface IAggregateRoot :
-        IEntity
+        IProjection
     {
         IEnumerable<IDomainEvent> UncommittedEvents { get; }
 
         long Version { get; }
-
-        void ApplyEvent(IDomainEvent @event);
 
         void ClearUncommitedEvents();
 
