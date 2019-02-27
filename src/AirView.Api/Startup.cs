@@ -104,7 +104,6 @@ namespace AirView.Api
             services.AddScoped<IWritableRepository<Flight>>(provider =>
                 new EventSourcedRepository<Flight>(
                     new EntityFrameworkEventLog<Flight>(provider.GetRequiredService<WriteDbContext>()),
-                    provider.GetRequiredService<IEventPublisher>(),
                     provider.GetRequiredService<IUnitOfWorkContext>()));
             // == Application ==
             // TODO(maximegelinas): Scan assemblies to register every command handlers and every event handlers at once.

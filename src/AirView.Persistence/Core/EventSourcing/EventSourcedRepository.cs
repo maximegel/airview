@@ -15,8 +15,6 @@ namespace AirView.Persistence.Core.EventSourcing
         where TAggregate : IAggregateRoot
     {
         private readonly IEventLog<IDomainEvent> _eventLog;
-        // TODO(maximegelinas): Move out event publishing responsability from event sourced repository.
-        private readonly IEventPublisher _eventPublisher;
 
         // TODO(maximegelinas): Make stream ID naming convention configurable.
         private readonly Func<Type, object, string> _streamIdNamingConvention =
@@ -26,11 +24,9 @@ namespace AirView.Persistence.Core.EventSourcing
 
         public EventSourcedRepository(
             IEventLog<IDomainEvent> eventLog,
-            IEventPublisher eventPublisher,
             IUnitOfWorkContext unitOfWorkContext)
         {
             _eventLog = eventLog;
-            _eventPublisher = eventPublisher;
             unitOfWorkContext.Enlist(this);
         }
 
@@ -59,8 +55,6 @@ namespace AirView.Persistence.Core.EventSourcing
                     .AppendRange(aggregate.UncommittedEvents);
 
             await _eventLog.SaveAsync(cancellationToken);
-            await Task.WhenAll(_trakedAggregates.Values.Select(aggregate =>
-                aggregate.PublishEventsAsync(_eventPublisher, cancellationToken)));
         }
 
         public void Add(TAggregate aggregate) =>

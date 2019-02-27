@@ -1,14 +1,13 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AirView.Domain.Core;
 
-namespace AirView.Persistence.Core.Internal
+namespace AirView.Domain.Core
 {
-    internal static class AggregateRootExtensions
+    public static class EventPublisherExtensions
     {
-        public static Task PublishEventsAsync(
-            this IAggregateRoot aggregate, IEventPublisher eventPublisher,
+        public static Task PublishAsync(
+            this IEventPublisher eventPublisher, IAggregateRoot aggregate,
             CancellationToken cancellationToken = default) =>
             Task.WhenAll(aggregate.UncommittedEvents.Select(@event =>
                     eventPublisher.PublishAsync(@event, cancellationToken)))
