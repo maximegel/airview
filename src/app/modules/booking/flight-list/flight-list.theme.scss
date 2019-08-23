@@ -1,0 +1,12 @@
+@import '~@angular/material/theming';
+@import './flight-card/flight-card.theme';
+
+@mixin flight-list-theme($theme) {
+  $primary: map-get($theme, 'primary');
+
+  .av-flight-list {
+    @include flight-card-theme($theme);
+
+    background-color: mat-color($primary, 50);
+  }
+}

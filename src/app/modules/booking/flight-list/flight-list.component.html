@@ -1,0 +1,6 @@
+<div class="av-flight-list" fxFill fxLayout="column" fxLayoutGap="4px">
+  <av-flight-card
+    *ngFor="let item of model.items; trackBy: trackByFn"
+    [model]="item"
+  ></av-flight-card>
+</div>

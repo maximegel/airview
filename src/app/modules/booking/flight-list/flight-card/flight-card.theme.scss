@@ -1,0 +1,9 @@
+@import '~@angular/material/theming';
+
+@mixin flight-card-theme($theme) {
+  $background: map-get($theme, 'background');
+
+  .av-flight-card {
+    background-color: mat-color($background, 'card');
+  }
+}
