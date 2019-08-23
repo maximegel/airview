@@ -1,0 +1,35 @@
+{
+  // Editor:
+  "editor.autoIndent": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.tslint": true,
+    "source.organizeImports": true
+  },
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.renderWhitespace": "none",
+  "editor.tabCompletion": "on",
+  "editor.tabSize": 2,
+  "editor.wordWrap": "off",
+  // Files:
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/*.js": {
+      "when": "$(basename).ts"
+    },
+    "**/*.js.map": {
+      "when": "$(basename)"
+    }
+  },
+  "files.defaultLanguage": "typescript",
+  "files.trimTrailingWhitespace": true,
+  // Appearance:
+  "workbench.iconTheme": "vscode-icons",
+  // Extensions:
+  "prettier.printWidth": 100,
+  "prettier.singleQuote": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "vsicons.presets.angular": true,
+  "vsicons.projectDetection.autoReload": true
+}
