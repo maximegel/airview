@@ -93,6 +93,14 @@ $theme: mat-light-theme($primary, $accent, $warn);
 // Include theme styles for your custom components.
 @include app-theme($theme);
 
+.av-m0 {
+  margin: 0 !important;
+}
+
+.av-text-accent {
+  color: mat-color($accent);
+}
+
 html,
 body {
   height: 100%;

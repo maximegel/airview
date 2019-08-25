@@ -1,0 +1,13 @@
+<div fxLayout="row wrap">
+  <h4>{{ model?.carriers?.join(', ') }}</h4>
+  <span fxFlex></span>
+  <h2 class="av-price av-text-accent">
+    {{ model?.price | currency: 'USD':'symbol-narrow':'1.0-2' }}*
+  </h2>
+  <div fxFill fxLayout="column">
+    <av-flight-card-itinerary
+      [type]="model?.type"
+      [model]="model?.itinerary"
+    ></av-flight-card-itinerary>
+  </div>
+</div>

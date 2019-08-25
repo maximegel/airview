@@ -1,0 +1,29 @@
+.av-header {
+  padding-bottom: 10px;
+
+  .av-price {
+    margin-right: 10px;
+  }
+}
+
+.av-close-btn {
+  font-size: 2em;
+  margin-bottom: 5px;
+}
+
+.av-trip {
+  margin-top: 16px;
+  padding: 0 10px;
+}
+
+.av-airport-code {
+  font-size: 3em;
+
+  & + h1 {
+    font-size: 2em;
+  }
+}
+
+.av-actions {
+  margin-top: 10px;
+}

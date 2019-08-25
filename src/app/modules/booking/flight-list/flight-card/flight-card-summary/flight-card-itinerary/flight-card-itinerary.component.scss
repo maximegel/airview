@@ -1,0 +1,20 @@
+.av-arrow {
+  .mat-badge-content {
+    right: 15px !important;
+    top: 3px !important;
+  }
+
+  .mat-icon {
+    transform: scaleX(3);
+  }
+}
+
+.av-arrow-return {
+  .mat-badge-content {
+    left: 15px !important;
+  }
+
+  .mat-icon {
+    transform: scaleX(3) rotate(180deg);
+  }
+}

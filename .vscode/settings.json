@@ -7,6 +7,7 @@
   },
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
+  "editor.minimap.enabled": false,
   "editor.renderWhitespace": "none",
   "editor.tabCompletion": "on",
   "editor.tabSize": 2,
@@ -29,7 +30,7 @@
   // Extensions:
   "prettier.printWidth": 100,
   "prettier.singleQuote": true,
-  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
   "vsicons.presets.angular": true,
   "vsicons.projectDetection.autoReload": true
 }
