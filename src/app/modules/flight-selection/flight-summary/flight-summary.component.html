@@ -1,0 +1,9 @@
+<div class="mat-typography" fxLayout="row wrap">
+  <h4>{{ model?.carriers?.join(', ') }}</h4>
+  <span fxFlex></span>
+  <h2 class="av-price av-text-accent">{{ model?.price | currency: 'USD':'symbol-narrow':'1.0-2' }}*</h2>
+  <div fxFill fxLayout="column">
+    <av-flight-itinerary type="depart" [model]="model?.depart"></av-flight-itinerary>
+    <av-flight-itinerary type="return" [model]="model?.return"></av-flight-itinerary>
+  </div>
+</div>

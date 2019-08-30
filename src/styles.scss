@@ -101,6 +101,20 @@ $theme: mat-light-theme($primary, $accent, $warn);
   color: mat-color($accent);
 }
 
+.mat-card:not([class*='mat-elevation-z']) {
+  @include mat-elevation(0);
+}
+
+.mat-raised-button {
+  border-radius: 50px !important;
+  padding: 0 26px !important;
+  text-transform: uppercase;
+
+  &:not([class*='mat-elevation-z']) {
+    @include mat-elevation(0);
+  }
+}
+
 html,
 body {
   height: 100%;

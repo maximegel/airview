@@ -1,0 +1,19 @@
+<div class="mat-typography">
+  <div class="av-header" fxLayout="row" fxLayoutAlign="space-between center" fxLayoutGap="5px">
+    <button class="av-close-btn" mat-icon-button (click)="close()">
+      <mat-icon color="primary" inline>close</mat-icon>
+    </button>
+    <span fxFlex></span>
+    <h2 class="av-m0 av-text-accent av-price">
+      {{ model?.price | currency: 'USD':'symbol-narrow':'1.0-2' }}
+    </h2>
+  </div>
+  <mat-divider></mat-divider>
+  <av-flight-itinerary-detail [model]="model?.depart"></av-flight-itinerary-detail>
+  <mat-divider></mat-divider>
+  <av-flight-itinerary-detail [model]="model?.return"></av-flight-itinerary-detail>
+  <mat-divider></mat-divider>
+  <div class="av-actions" fxLayout="row" fxLayoutAlign="center center">
+    <button mat-raised-button color="primary" (click)="selectFlight()">Select flight</button>
+  </div>
+</div>

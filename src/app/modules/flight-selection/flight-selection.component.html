@@ -1,0 +1,9 @@
+<av-flight-list [items]="list$ | async" [active]="(active$ | async)?.id">
+  <av-flight-summary *avFlightListItem="let item" [model]="item" (click)="showDetail(item?.id)"></av-flight-summary>
+  <av-flight-detail
+    *avFlightListActiveItem
+    [model]="active$ | async"
+    (closed)="hideDetail()"
+    (flightSelected)="selectFlight($event?.id)"
+  ></av-flight-detail>
+</av-flight-list>

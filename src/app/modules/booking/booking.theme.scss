@@ -1,8 +1,0 @@
-@import '~@angular/material/theming';
-@import './flight-list/flight-list.theme';
-
-@mixin booking-theme($theme) {
-  .av-booking {
-    @include flight-list-theme($theme);
-  }
-}

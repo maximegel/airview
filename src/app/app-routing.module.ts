@@ -2,10 +2,13 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'booking', pathMatch: 'full' },
+  { path: '', redirectTo: 'flights', pathMatch: 'full' },
   {
-    path: 'booking',
-    loadChildren: () => import('./modules/booking/booking.module').then(m => m.BookingModule)
+    path: 'flights',
+    loadChildren: () =>
+      import('./modules/flight-selection/flight-selection.module').then(
+        m => m.FlightSelectionModule
+      )
   }
 ];
 

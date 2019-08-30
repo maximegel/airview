@@ -1,8 +1,6 @@
 @import '~@angular/material/theming';
-@import './modules/booking/booking.theme';
+@import './modules/flight-selection/flight-selection.theme';
 
 @mixin app-theme($theme) {
-  .av-app {
-    @include booking-theme($theme);
-  }
+  @include flight-selection-theme($theme);
 }
