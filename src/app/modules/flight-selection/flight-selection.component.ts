@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Select, Store } from '@ngxs/store';
+import { Observable } from 'rxjs';
 import { FlightDetailModel } from './flight-detail/flight-detail.model';
-import { FlightSelectionService } from './flight-selection.service';
+import { HideFlightDetail, SelectFlight, ShowFlightDetail } from './flight-selection.actions';
+import { FlightSelectionState } from './flight-selection.state';
 import { FlightSummaryModel } from './flight-summary/flight-summary.model';
 
 @Component({
@@ -14,24 +16,22 @@ import { FlightSummaryModel } from './flight-summary/flight-summary.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FlightSelectionComponent implements OnInit {
-  active$: Observable<FlightDetailModel>;
-  list$: Observable<FlightSummaryModel[]>;
+  @Select(FlightSelectionState.active) active$: Observable<FlightDetailModel>;
+  @Select(FlightSelectionState.list) list$: Observable<FlightSummaryModel[]>;
 
-  constructor(private service: FlightSelectionService) {}
+  constructor(private store: Store) {}
 
-  ngOnInit() {
-    this.list$ = this.service.query();
-  }
+  ngOnInit() {}
 
   hideDetail() {
-    this.active$ = of(null);
+    return this.store.dispatch(new HideFlightDetail());
   }
 
-  selectFlight(id: string) {
-    alert(`Select flight #${id}...`);
+  select(id: string) {
+    return this.store.dispatch(new SelectFlight(id));
   }
 
   showDetail(id: string) {
-    this.active$ = this.service.find(id);
+    return this.store.dispatch(new ShowFlightDetail(id));
   }
 }

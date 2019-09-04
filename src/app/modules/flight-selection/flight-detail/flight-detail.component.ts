@@ -10,7 +10,7 @@ import { FlightDetailModel } from './flight-detail.model';
 export class FlightDetailComponent implements OnInit {
   @Input() model: FlightDetailModel;
   @Output() closed = new EventEmitter<void>();
-  @Output() flightSelected = new EventEmitter<FlightDetailModel>();
+  @Output() selected = new EventEmitter<FlightDetailModel>();
 
   constructor() {}
 
@@ -20,7 +20,7 @@ export class FlightDetailComponent implements OnInit {
     this.closed.emit();
   }
 
-  selectFlight() {
-    this.flightSelected.emit(this.model);
+  select() {
+    this.selected.emit(this.model);
   }
 }

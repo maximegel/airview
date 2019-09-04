@@ -12,17 +12,18 @@
   "editor.tabCompletion": "on",
   "editor.tabSize": 2,
   "editor.wordWrap": "off",
-  // Files:
-  "files.exclude": {
-    "**/.git": true,
-    "**/.DS_Store": true,
-    "**/*.js": {
-      "when": "$(basename).ts"
-    },
-    "**/*.js.map": {
-      "when": "$(basename)"
-    }
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // Explorer:
+  "explorer.autoReveal": false,
+  // Files:
   "files.defaultLanguage": "typescript",
   "files.trimTrailingWhitespace": true,
   // Appearance:

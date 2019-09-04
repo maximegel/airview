@@ -4,6 +4,6 @@
     *avFlightListActiveItem
     [model]="active$ | async"
     (closed)="hideDetail()"
-    (flightSelected)="selectFlight($event?.id)"
+    (selected)="select($event?.id)"
   ></av-flight-detail>
 </av-flight-list>
