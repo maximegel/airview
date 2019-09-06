@@ -11,9 +11,13 @@ export class FlightSelectionService {
   find(id: string): Observable<FlightDetailModel> {
     return of({
       id,
-      price: 1406,
+      numbers: ['131', '1141'],
+      price: 876,
       depart: {
         type: 'depart',
+        number: '131',
+        price: 428,
+        carrier: 'Sunny Day Air',
         departureDate: new Date(new Date().setHours(6, 10)),
         departureAirport: {
           iataCode: 'SEL',
@@ -42,6 +46,9 @@ export class FlightSelectionService {
       },
       return: {
         type: 'return',
+        number: '1141',
+        price: 448,
+        carrier: 'Sunny Day Air',
         departureDate: new Date(new Date().setHours(14, 21)),
         departureAirport: {
           iataCode: 'SEL',

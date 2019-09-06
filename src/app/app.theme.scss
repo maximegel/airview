@@ -1,6 +1,8 @@
 @import '~@angular/material/theming';
 @import './modules/flight-selection/flight-selection.theme';
+@import './shared/arrow/arrow.theme';
 
-@mixin app-theme($theme) {
-  @include flight-selection-theme($theme);
+@mixin av-app-theme($theme) {
+  @include av-arrow-theme($theme);
+  @include av-flight-selection-theme($theme);
 }

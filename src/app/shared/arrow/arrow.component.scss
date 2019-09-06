@@ -1,0 +1,43 @@
+.av-arrow {
+  $head-width: 10px;
+  $head-height: 12px;
+  $shaft-height: 4px;
+
+  &.av-arrow-reverse {
+    .av-arrow-head {
+      border-right-style: solid;
+      border-right-width: $head-width;
+      border-left: none;
+      order: -1;
+    }
+
+    .av-arrow-shaft {
+      .mat-badge-content {
+        right: calc(50% - #{$head-width}) !important;
+      }
+    }
+  }
+
+  .av-arrow-head {
+    border-bottom: calc(#{$head-width} / 2) solid transparent;
+    border-left-style: solid;
+    border-left-width: $head-width;
+    border-top: calc(#{$head-width} / 2) solid transparent;
+    flex: 1 1 $head-width;
+    height: 0;
+    min-width: $head-width;
+    max-width: $head-width;
+    width: 0;
+  }
+
+  .av-arrow-shaft {
+    flex: 1 1 auto;
+    height: $shaft-height;
+
+    .mat-badge-content {
+      right: calc(50% - #{$head-width} * 2) !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%);
+    }
+  }
+}

@@ -1,12 +1,18 @@
 <div class="av-leg" fxLayout="row" fxLayoutAlign="space-between center">
-  <h2>{{ model.departureTime | date: 'hh:mmaaaaa' }}</h2>
-  <h4>{{ model?.departureAirport }}</h4>
-  <h4 fxFlex=".1 1 auto" fxLayout="column" fxLayoutAlign="center center">
-    <mat-icon color="primary">arrow_right_alt</mat-icon>
+  <h2 fxFlex="2 1 auto">{{ model.departureTime | date: 'hh:mmaaaaa' }}</h2>
+  <h4 fxFlex>{{ model?.departureAirport }}</h4>
+  <h4 class="av-text-right" fxFlex="2 1 auto" fxHide fxShow.gt-xs>
+    <mat-icon color="primary">flight_takeoff</mat-icon>
   </h4>
-  <h2>{{ model?.arrivalTime | date: 'hh:mmaaaaa' }}</h2>
-  <h4>{{ model?.arrivalAirport }}</h4>
-  <h4 fxLayout="row" fxLayoutAlign="center" fxLayoutGap="3px">
+  <span fxFlex></span>
+  <h4 fxFlex="4 1 auto"><av-arrow></av-arrow></h4>
+  <span fxFlex></span>
+  <h2 fxFlex="2 1 auto">{{ model?.arrivalTime | date: 'hh:mmaaaaa' }}</h2>
+  <h4 fxFlex>{{ model?.arrivalAirport }}</h4>
+  <h4 class="av-text-right" fxFlex="2 1 auto" fxHide fxShow.gt-xs>
+    <mat-icon color="primary">flight_land</mat-icon>
+  </h4>
+  <h4 fxFlex="3 1 auto" fxHide fxShow.gt-xs fxLayout="row" fxLayoutAlign="end" fxLayoutGap="3px">
     <mat-icon inline>schedule</mat-icon> <span>{{ model?.travelTimeInHours }}h</span>
   </h4>
 </div>

@@ -1,24 +1,41 @@
-<div class="av-itinerary" fxLayout="column">
+<div class="av-itinerary" [class.av-return]="model?.type === 'return'" fxLayout="column">
   <div fxLayout="row" fxLayoutAlign="space-between center">
-    <h2>{{ model?.type === 'depart' ? 'Departure' : 'Return' }}</h2>
+    <h2 fxFlex>{{ model?.type === 'depart' ? 'Depart' : 'Return' }}</h2>
     <span fxFlex></span>
-    <h4>{{ model?.departureDate | date }}</h4>
+    <h4 ngClass.lt-md="av-text-right" ngClass.gt-sm="av-text-left" fxFlex fxFlexOffset.gt-sm="5vw">
+      {{ model?.departureDate | date }}
+    </h4>
+    <h2 class="av-text-accent av-text-right" fxFlex fxHide fxShow.gt-sm>
+      {{ model?.price | currency: 'USD':'symbol-narrow':'1.0-2' }}
+    </h2>
   </div>
-  <div fxLayout="row" fxLayoutAlign="space-between center">
-    <h1 class="av-text-accent av-airport-code">
-      {{ model?.departureAirport?.iataCode }}
-    </h1>
-    <h1>
-      <mat-icon style="transform: rotate(90deg)" color="accent" inline>flight</mat-icon>
-    </h1>
-    <h1 class="av-text-accent av-airport-code">{{ model?.arrivalAirport?.iataCode }}</h1>
-  </div>
-  <div fxLayout="row" fxLayoutAlign="space-between center">
-    <h4>{{ model?.departureAirport?.name }}</h4>
-    <h4>{{ model?.arrivalAirport?.name }}</h4>
-  </div>
-  <div *ngFor="let leg of model?.legs">
-    <mat-divider inset></mat-divider>
-    <av-flight-leg [model]="leg"></av-flight-leg>
+  <div fxLayout.gt-sm="row">
+    <div class="av-itinerary-subheader" fxFlex.gt-sm fxFlexOffset.gt-sm="5vw">
+      <div fxLayout="row" fxLayoutAlign="space-between center">
+        <h1 class="av-text-accent av-airport-code">
+          {{ model?.departureAirport?.iataCode }}
+        </h1>
+        <h1 class="av-plane">
+          <mat-icon color="accent" inline>flight</mat-icon>
+        </h1>
+        <h1 class="av-text-accent av-airport-code">{{ model?.arrivalAirport?.iataCode }}</h1>
+      </div>
+      <div fxLayout="row" fxLayoutAlign="space-between center">
+        <h4>{{ model?.departureAirport?.name }}</h4>
+        <h4>{{ model?.arrivalAirport?.name }}</h4>
+      </div>
+    </div>
+    <div class="av-itinerary-body" fxFlex.gt-sm fxFlexOrder="-1">
+      <div fxLayout="row" fxLayoutAlign="space-between center">
+        <h4>{{ model?.carrier }}</h4>
+        <h4 fxHide fxShow.gt-sm>, Flight {{ model?.number }}</h4>
+        <span fxFlex></span>
+        <h2 class="av-text-accent" fxHide.gt-sm>{{ model?.price | currency: 'USD':'symbol-narrow':'1.0-2' }}</h2>
+      </div>
+      <div *ngFor="let leg of model?.legs">
+        <mat-divider inset></mat-divider>
+        <av-flight-leg [model]="leg"></av-flight-leg>
+      </div>
+    </div>
   </div>
 </div>

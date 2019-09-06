@@ -91,7 +91,7 @@ $theme: mat-light-theme($primary, $accent, $warn);
 @include angular-material-theme($theme);
 
 // Include theme styles for your custom components.
-@include app-theme($theme);
+@include av-app-theme($theme);
 
 .av-m0 {
   margin: 0 !important;
@@ -99,6 +99,18 @@ $theme: mat-light-theme($primary, $accent, $warn);
 
 .av-text-accent {
   color: mat-color($accent);
+}
+
+.av-text-center {
+  text-align: center;
+}
+
+.av-text-left {
+  text-align: left;
+}
+
+.av-text-right {
+  text-align: right;
 }
 
 .mat-card:not([class*='mat-elevation-z']) {

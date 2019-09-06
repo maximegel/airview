@@ -1,5 +1,9 @@
-.av-header {
+.av-flight-header {
   padding-bottom: 10px;
+
+  .av-title {
+    padding-left: 16px;
+  }
 
   .av-price {
     margin-right: 10px;
@@ -11,6 +15,6 @@
   margin-bottom: 5px;
 }
 
-.av-actions {
-  margin-top: 10px;
+.av-flight-footer {
+  padding: 20px 10px 5px;
 }

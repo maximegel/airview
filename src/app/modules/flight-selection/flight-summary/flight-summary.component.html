@@ -1,8 +1,10 @@
 <div class="mat-typography" fxLayout="row wrap">
-  <h4>{{ model?.carriers?.join(', ') }}</h4>
-  <span fxFlex></span>
-  <h2 class="av-price av-text-accent">{{ model?.price | currency: 'USD':'symbol-narrow':'1.0-2' }}*</h2>
-  <div fxFill fxLayout="column">
+  <h4 fxFlexOrder.gt-sm="1" fxFlex.gt-sm="20%">{{ model?.carriers?.join(', ') }}</h4>
+  <span fxFlex fxHide.gt-sm></span>
+  <h2 fxFlexOrder.gt-sm="3" fxFlex.gt-sm="20%" class="av-text-accent av-text-right">
+    {{ model?.price | currency: 'USD':'symbol-narrow':'1.0-2' }}*
+  </h2>
+  <div fxFill fxFlexOrder.gt-sm="2" fxFlex.gt-sm="60%" fxLayout="column">
     <av-flight-itinerary type="depart" [model]="model?.depart"></av-flight-itinerary>
     <av-flight-itinerary type="return" [model]="model?.return"></av-flight-itinerary>
   </div>

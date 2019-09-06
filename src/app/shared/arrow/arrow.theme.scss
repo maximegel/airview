@@ -1,0 +1,16 @@
+@import '~@angular/material/theming';
+
+@mixin av-arrow-theme($theme) {
+  $primary: map-get($theme, 'primary');
+
+  .av-arrow {
+    .av-arrow-head {
+      border-left-color: mat-color($primary);
+      border-right-color: mat-color($primary);
+    }
+
+    .av-arrow-shaft {
+      background-color: mat-color($primary);
+    }
+  }
+}

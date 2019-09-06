@@ -1,8 +1,8 @@
 @import '~@angular/material/theming';
 @import './flight-list/flight-list.theme';
 
-@mixin flight-selection-theme($theme) {
+@mixin av-flight-selection-theme($theme) {
   .av-flight-selection {
-    @include flight-list-theme($theme);
+    @include av-flight-list-theme($theme);
   }
 }

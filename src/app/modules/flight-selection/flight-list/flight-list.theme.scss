@@ -1,6 +1,6 @@
 @import '~@angular/material/theming';
 
-@mixin flight-list-theme($theme) {
+@mixin av-flight-list-theme($theme) {
   $primary: map-get($theme, 'primary');
 
   .av-flight-list {

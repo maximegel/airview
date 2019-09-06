@@ -14,6 +14,10 @@ export class FlightDetailComponent implements OnInit {
 
   constructor() {}
 
+  get numbersString(): string {
+    return this.model.numbers.map(num => `Flight ${num}`).join(', ');
+  }
+
   ngOnInit() {}
 
   close() {

@@ -1,12 +1,27 @@
 .av-itinerary {
-  margin-top: 16px;
-  padding: 0 10px;
+  padding: 16px 10px;
+
+  .av-airport-code {
+    font-size: 3em;
+  }
+
+  .av-plane {
+    font-size: 3em;
+
+    .mat-icon {
+      transform: rotate(90deg);
+    }
+  }
+
+  &.av-return {
+    .av-plane {
+      .mat-icon {
+        transform: rotate(-90deg);
+      }
+    }
+  }
 }
 
-.av-airport-code {
-  font-size: 3em;
-
-  & + h1 {
-    font-size: 2em;
-  }
+.av-itinerary-subheader {
+  margin-bottom: 32px;
 }
