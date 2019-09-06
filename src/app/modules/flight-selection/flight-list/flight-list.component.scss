@@ -2,3 +2,12 @@
   min-height: 100%;
   padding: 1vh;
 }
+
+.av-flight-active {
+  left: 0;
+  margin-bottom: 0 !important;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}

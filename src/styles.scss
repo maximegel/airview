@@ -93,8 +93,18 @@ $theme: mat-light-theme($primary, $accent, $warn);
 // Include theme styles for your custom components.
 @include av-app-theme($theme);
 
-.av-m0 {
+.av-m-0 {
   margin: 0 !important;
+}
+
+.av-mx-0 {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.av-my-0 {
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
 }
 
 .av-text-accent {

@@ -8,13 +8,19 @@
   .av-price {
     margin-right: 10px;
   }
+
+  .av-close-btn {
+    font-size: 2em;
+    margin-bottom: 5px;
+    top: 1px;
+  }
 }
 
-.av-close-btn {
-  font-size: 2em;
-  margin-bottom: 5px;
+.av-flight-main-scroll {
+  height: calc(100vh - (71px + 68px));
+  overflow-y: scroll;
 }
 
 .av-flight-footer {
-  padding: 20px 10px 5px;
+  padding: 16px 10px 0;
 }

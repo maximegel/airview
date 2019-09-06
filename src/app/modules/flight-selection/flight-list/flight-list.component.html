@@ -1,6 +1,6 @@
 <div class="av-flight-list-bg" fxLayout="column" fxLayoutGap="10px">
-  <mat-card *ngFor="let item of items">
-    <ng-container *ngIf="item.id !== active; else activeRef">
+  <mat-card *ngFor="let item of items" [ngClass.lt-md]="{ 'av-flight-active': item?.id === active }">
+    <ng-container *ngIf="item?.id !== active; else activeRef">
       <ng-container *ngTemplateOutlet="itemOutlet?.templateRef; context: { $implicit: item }"></ng-container>
     </ng-container>
     <ng-template #activeRef>
